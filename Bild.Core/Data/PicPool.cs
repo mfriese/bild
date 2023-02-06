@@ -18,20 +18,16 @@ namespace Bild.Core.Data
 			{
 				using var pic = new Pic(file);
 
-				var yearPath = Path.Combine(projectFolder, $"{pic.Year}");
-				var monthPath = Path.Combine(yearPath, $"{pic.Month}");
-				var dayPath = Path.Combine(monthPath, $"{pic.Day}");
+				var picPath = Path.Combine(projectFolder, $"{pic.Year}_{ pic.Month}");
 
-				if (!Directory.Exists(yearPath))
-					Directory.CreateDirectory(yearPath);
+				if (!Directory.Exists(picPath))
+					Directory.CreateDirectory(picPath);
 
-				if (!Directory.Exists(monthPath))
-					Directory.CreateDirectory(monthPath);
+				var picDate = pic.DateTime.ToString("yyyyMMdd-hhmmss");
+				
+				var picDestination = Path.Combine(picPath, $"{picDate}.{pic.Extension}");
 
-				if (!Directory.Exists(dayPath))
-					Directory.CreateDirectory(dayPath);
-
-				File.Copy(file, Path.Combine(dayPath, pic.Filename));
+				File.Copy(file, picDestination);
 			}
 		}
 	}

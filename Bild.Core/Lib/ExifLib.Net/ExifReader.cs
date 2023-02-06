@@ -56,7 +56,7 @@ namespace ExifLib
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 		{
             if (stream == null)
-                throw new ArgumentNullException("stream");
+                throw new ArgumentNullException(nameof(stream));
 
             if (!stream.CanSeek)
                 throw new ExifLibException("ExifLib requires a seekable stream");

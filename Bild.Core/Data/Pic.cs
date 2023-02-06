@@ -16,6 +16,9 @@ namespace Bild.Core.Data
 		public string Filename
 			=> System.IO.Path.GetFileName(Path);
 
+		public string Extension
+			=> System.IO.Path.GetExtension(Path);
+
 		private DateTime? m_dateTime;
 		public DateTime DateTime
 		{
