@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Bild.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Bild.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Background="White"
+        Title="Bild">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Menu
+            Grid.Row="0"
+            Background="LightGray"
+            VerticalAlignment="Top">
+            <MenuItem
+                Header="File">
+                <MenuItem
+                    Header="Open ..." />
+                <MenuItem
+                    Header="Import" />
+            </MenuItem>
+        </Menu>
+
+        <TextBlock
+            Grid.Row="1"
+            Text="{Binding Greeting}"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
+    </Grid>
+
+</Window>
