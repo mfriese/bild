@@ -1,17 +1,20 @@
-﻿using ExifLib;
+﻿using MetadataExtractor;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.FileType;
 
 namespace Bild.Core.Data
 {
-	public sealed class Pic : IDisposable
+	public sealed class Pic
 	{
 		public Pic(string path)
 		{
 			Path = path;
-			ExifReader = new ExifReader(path);
+
+			Exif = ImageMetadataReader.ReadMetadata(path);
 		}
 
-		private string Path { get; }
-		private ExifReader ExifReader { get; }
+		public string Path { get; }
+		private IReadOnlyList<MetadataExtractor.Directory> Exif { get; }
 
 		public string Filename
 			=> System.IO.Path.GetFileName(Path);
@@ -24,22 +27,35 @@ namespace Bild.Core.Data
 		{
 			get
 			{
-				if (null == m_dateTime)
+				if (!m_dateTime.HasValue)
 				{
-					ExifReader.GetTagValue(ExifTags.DateTime, out DateTime date);
-
-					m_dateTime = date;
+					m_dateTime = Exif.
+						OfType<ExifIfd0Directory>().FirstOrDefault()?.
+						GetDateTime(ExifIfd0Directory.TagDateTime) ?? DateTime.MinValue;
 				}
 
-				return m_dateTime ?? DateTime.Now;
+				return m_dateTime.Value;
+			}
+		}
+
+		private string m_fileType = string.Empty;
+		public string FileType
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(m_fileType))
+				{
+					m_fileType = Exif.
+						OfType<FileTypeDirectory>().FirstOrDefault()?.
+						GetDescription(FileTypeDirectory.TagDetectedFileTypeName) ?? "Unknown";
+				}
+
+				return m_fileType;
 			}
 		}
 
 		public int Year => DateTime.Year;
 		public int Month => DateTime.Month;
 		public int Day => DateTime.Day;
-
-		public void Dispose()
-			=> ExifReader.Dispose();
 	}
 }
