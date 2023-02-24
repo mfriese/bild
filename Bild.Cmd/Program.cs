@@ -2,6 +2,7 @@
 using Bild.Cmd;
 using Bild.Core.Data;
 using Bild.Core.Environment;
+using Bild.Core.Files;
 
 Console.WriteLine("Hello, World!");
 
@@ -20,4 +21,12 @@ settings.ProjectFolder = @"C:\tmp\proj";
 
 var pool = new PicPool(settings);
 
-pool.Import(@"C:\tmp\");
+// pool.Import(@"C:\tmp\");
+
+var album = new Album(new Settings()
+{
+	ProjectFolder = @"C:\tmp\proj"
+});
+
+Console.WriteLine(album.MediaType);
+

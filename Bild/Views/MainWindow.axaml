@@ -26,9 +26,11 @@
             <MenuItem
                 Header="File">
                 <MenuItem
-                    Header="Open ..." />
+                    Header="Open ..."
+                    Command="{Binding OpenProject}" />
                 <MenuItem
-                    Header="Import" />
+                    Header="Import ..."
+                    Command="{Binding ImportFolder}" />
             </MenuItem>
         </Menu>
 
