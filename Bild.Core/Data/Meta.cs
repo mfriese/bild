@@ -1,12 +1,13 @@
-﻿using MetadataExtractor;
+﻿using Bild.Core.Environment;
+using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.FileType;
 
 namespace Bild.Core.Data
 {
-	public sealed class Pic
+	public sealed class Meta
 	{
-		public Pic(string path)
+		public Meta(string path)
 		{
 			Path = path;
 
@@ -54,8 +55,12 @@ namespace Bild.Core.Data
 			}
 		}
 
+		public MediaType MediaType { get; } = MediaType.Picture;
+
 		public int Year => DateTime.Year;
 		public int Month => DateTime.Month;
 		public int Day => DateTime.Day;
 	}
+
+	
 }
