@@ -1,15 +1,17 @@
-name: dotnet package
+name: Release On Commit
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
-
+    name: Build project
     runs-on: windows-latest
     strategy:
       matrix:
         dotnet-version: ['6.0.x' ]
-
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -22,3 +24,42 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ github.run_number }}
+          path: D:\a\bild\bild\Bild\bin\Release\net6.0\
+  release:
+    name: Release project
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: artifacts-${{ github.run_number }}
+      - name: Test artifact download
+        run: ls -R
+      - name: Archive project content
+        uses: thedoctor0/zip-release@master
+        with:
+          filename: release-${{ github.run_number }}.zip
+      - name: Create github release
+        id: create-new-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: ${{ github.event.head_commit.message }}
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-new-release.outputs.upload_url }}
+          asset_path: release-${{ github.run_number }}.zip
+          asset_name: release-v${{ github.run_number }}.zip
+          asset_content_type: application/zip
+        
