@@ -21,7 +21,7 @@ namespace Bild.Core.Files
 		protected IEnumerable<File>? m_files = null;
 		public IEnumerable<File> Files
 		{
-			get => m_files ?? FindFiles(ref m_files, MediaPath);
+			get => m_files ?? FindFiles(ref m_files, this);
 			set => m_files = value;
 		}
 
@@ -37,10 +37,13 @@ namespace Bild.Core.Files
 			return dirs;
 		}
 
-		private static IEnumerable<File> FindFiles(ref IEnumerable<File>? files, string path)
+		private static IEnumerable<File> FindFiles(ref IEnumerable<File>? files, Dir dir)
 		{
-			files = from ff in Directory.EnumerateFiles(path)
-					select new File(ff);
+			// Find files in this directory
+			files = from ff in Directory.EnumerateFiles(dir.MediaPath) select new File(ff);
+			// Find files in all subdirectories, if any
+			files = files.Concat(from subDir in dir.Dirs from subFile in subDir.Files select subFile);
+			// keep and return
 			return files;
 		}
 
