@@ -1,3 +1,5 @@
+![release](https://github.com/mfriese/bild/actions/workflows/dotnet-desktop.yml/badge.svg)
+
 # bild
 Fast Photo management application to create a very simple structure one
 can easily browse with the File Explorer of one's OS. It seems there are
