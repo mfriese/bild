@@ -1,4 +1,8 @@
-﻿using Splat;
+﻿using Bild.Core.Environment;
+using Bild.Environment;
+using Bild.ViewModels;
+using Bild.Views;
+using Splat;
 
 namespace Bild.Injection
 {
@@ -6,50 +10,20 @@ namespace Bild.Injection
 	{
 		public static void RegisterAllClassInstances(this IMutableDependencyResolver locator)
 		{
-			//var zorroConfig = ZorroConfigRepo.LoadZorroConfig();
-			//var uploadQueue = ZorroConfigRepo.LoadUploadQueue();
-			//var uploadConfig = ZorroConfigRepo.LoadUploadConfig();
+			// Data classes to be registered
+			Locator.CurrentMutable.RegisterConstant<IFileConfig>(new FileConfig());
+			Locator.CurrentMutable.RegisterConstant(new Repository(
+				Locator.Current.GetService<IFileConfig>()));
 
-			//Locator.CurrentMutable.RegisterConstant(zorroConfig);
-			//Locator.CurrentMutable.RegisterConstant(uploadConfig);
-			//Locator.CurrentMutable.RegisterConstant(uploadQueue);
-			//Locator.CurrentMutable.RegisterConstant<IMsgBus>(new MsgBus("Z:UrlHandler"));
+			// UI ViewModels to be registered
+			Locator.CurrentMutable.RegisterConstant(new MainWindowViewModel(
+				Locator.Current.GetService<Repository>()));
 
-			//Locator.CurrentMutable.RegisterConstant<IClient>(new ZorroClient(
-			//	zorroConfig, uploadConfig));
-
-			//Locator.CurrentMutable.RegisterConstant(new GroupUploader(
-			//	Locator.Current.GetService<ZorroConfig>(),
-			//	Locator.Current.GetService<UploadQueue>(),
-			//	Locator.Current.GetService<IClient>()));
-			//Locator.CurrentMutable.RegisterConstant(new TrayIcon());
-			//var trayUpdater = new LimiterCallback(new TrayInfoUpdateOperation(
-			//	Locator.Current.GetService<TrayIcon>(),
-			//	Locator.Current.GetService<UploadQueue>()), 1000);
-			//Locator.CurrentMutable.RegisterConstant(new UploadWorker(
-			//	Locator.Current.GetService<GroupUploader>(), trayUpdater));
-
-			//// UI components
-			//Locator.CurrentMutable.RegisterConstant(new MainWindow
-			//{
-			//	DataContext = new MainWindowViewModel(
-			//	Locator.Current.GetService<UploadQueue>(),
-			//	Locator.Current.GetService<UploadConfig>(),
-			//	Locator.Current.GetService<IClient>())
-			//});
-
-			//Locator.CurrentMutable.RegisterConstant(new TrayWindow
-			//{
-			//	DataContext = new TrayWindowViewModel(
-			//	Locator.Current.GetService<UploadQueue>())
-			//});
-
-			//Locator.CurrentMutable.Register(() => new SettingsWindow()
-			//{
-			//	DataContext = new SettingsWindowViewModel(
-			//	Locator.Current.GetService<ZorroConfig>(),
-			//	Locator.Current.GetService<UploadConfig>())
-			//});
+			// UI Classes to be registered
+			Locator.CurrentMutable.RegisterConstant(new MainWindow()
+			{
+				DataContext = Locator.Current.GetService<MainWindowViewModel>()
+			});
 		}
 	}
 }

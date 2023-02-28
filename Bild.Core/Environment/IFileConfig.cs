@@ -2,6 +2,7 @@
 {
 	public interface IFileConfig
 	{
-		public string ConfigFilePath { get; }
+		public string ConfigPath { get; }
+		public string ConfigFile { get; }
 	}
 }

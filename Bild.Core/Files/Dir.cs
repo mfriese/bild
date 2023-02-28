@@ -31,6 +31,9 @@ namespace Bild.Core.Files
 
 		private static IEnumerable<Dir> FindDirectories(ref IEnumerable<Dir>? dirs, string path)
 		{
+			if (!Directory.Exists(path))
+				return new List<Dir>();
+
 			dirs = from dd in Directory.EnumerateDirectories(path)
 				   where dd != "." && dd != ".."
 				   select new Dir(dd);
