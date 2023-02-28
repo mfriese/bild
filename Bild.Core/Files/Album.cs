@@ -13,17 +13,22 @@ namespace Bild.Core.Files
 
 		public Settings Settings { get; }
 
-		public List<Item> ImportQueue { get; } = new();
+		public List<Item>? ImportQueue { get; protected set; }
 
 		public void PrepareDirImport(string path)
-			=> ImportQueue.AddRange(Finder.FindAll(path));
+		{
+			ImportQueue = Finder.FindAll(path);
+		}
 
 		public void AdjustDirImport(Treatment treatment = Treatment.Overwrite)
-			=> ImportQueue.ForEach(ii => ii.Treatment = ii.Exisits(Settings) ? treatment : Treatment.Normal);
+		{
+			ImportQueue?.ForEach(ii =>
+				ii.Treatment = ii.Exisits(Settings) ? treatment : Treatment.Normal);
+		}
 
 		public void ExecuteDirImport()
 		{
-			ImportQueue.ForEach(ii =>
+			ImportQueue?.ForEach(ii =>
 			{
 				InitializeMediaDirectory(ii.Meta.DateTime);
 

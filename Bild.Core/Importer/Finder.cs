@@ -1,6 +1,6 @@
 ﻿namespace Bild.Core.Importer
 {
-	public class Finder
+	public static class Finder
 	{
 		public static List<Item> FindAll(string directory)
 		{
