@@ -51,9 +51,9 @@ namespace Bild.ViewModels
 					SelectedPath = null;
 					Files = null;
 
-					(this as IReactiveObject)?.RaisePropertyChanged(new PropertyChangedEventArgs(nameof(Album)));
-					(this as IReactiveObject)?.RaisePropertyChanged(new PropertyChangedEventArgs(nameof(SelectedPath)));
-					(this as IReactiveObject)?.RaisePropertyChanged(new PropertyChangedEventArgs(nameof(Files)));
+					SendPropertyChanged(nameof(Album));
+					SendPropertyChanged(nameof(SelectedPath));
+					SendPropertyChanged(nameof(Files));
 				}
 			}
 		}
@@ -69,7 +69,7 @@ namespace Bild.ViewModels
 				m_selectedPath = value;
 				Files = m_selectedPath?.Files ?? new List<File>();
 
-				(this as IReactiveObject)?.RaisePropertyChanged(new PropertyChangedEventArgs(nameof(Files)));
+				SendPropertyChanged(nameof(Files));
 			}
 		}
 
