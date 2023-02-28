@@ -1,4 +1,4 @@
-name: Release On Commit
+name: Autobuild (main)
 
 on:
   push:
