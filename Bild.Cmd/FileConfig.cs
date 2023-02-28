@@ -4,6 +4,7 @@ namespace Bild.Cmd
 {
 	public class FileConfig : IFileConfig
 	{
-		public string ConfigFilePath => "./config.json";
+		public string ConfigPath => ".";
+		public string ConfigFile => "config.json";
 	}
 }

@@ -13,8 +13,8 @@ namespace Bild.Core.Environment
 
 		public Settings Settings
 		{
-			get => LoadFromFile<Settings>(FileConfig.ConfigFilePath);
-			set => WriteToFile(value, FileConfig.ConfigFilePath);
+			get => LoadFromFile<Settings>(Path.Combine(FileConfig.ConfigPath, FileConfig.ConfigFile));
+			set => WriteToFile(value, Path.Combine(FileConfig.ConfigPath, FileConfig.ConfigFile));
 		}
 
 		/// <summary>
