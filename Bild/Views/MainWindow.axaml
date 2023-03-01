@@ -45,7 +45,7 @@
                     <TreeDataTemplate
                         ItemsSource="{Binding Dirs}">
                         <TextBlock
-                            Text="{Binding MediaName}" />
+                            Text="{Binding Filename}" />
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>

@@ -4,9 +4,9 @@ using MetadataExtractor.Util;
 
 namespace Bild.Core.Importer
 {
-	public class Item
+	public class ImportItem
 	{
-		public Item(string absolutePath)
+		public ImportItem(string absolutePath)
 		{
 			AbsolutePath = absolutePath;
 		}
@@ -21,7 +21,7 @@ namespace Bild.Core.Importer
 		private Meta? m_meta;
 		public Meta Meta => InitializeMeta(ref m_meta, AbsolutePath);
 
-		public Treatment Treatment { get; set; } = Treatment.Normal;
+		public ImportTreatment Treatment { get; set; } = ImportTreatment.Unknown;
 
 		protected static FileType InitializeFileType(ref FileType? mediaType, string path)
 		{
@@ -44,11 +44,13 @@ namespace Bild.Core.Importer
 
 			return meta;
 		}
+
+		public override string ToString() => $"{AbsolutePath} -> {FileType}, {Treatment}";
 	}
 
 	public static class ItemExtensions
 	{
-		public static bool Exisits(this Item item, Settings settings)
+		public static bool Exisits(this ImportItem item, Settings settings)
 		{
 			var pathInAlbum = settings.GetFilePath(item.Meta.MediaType, item.FileType, item.Meta.DateTime);
 

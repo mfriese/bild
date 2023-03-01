@@ -37,9 +37,11 @@ namespace Bild.ViewModels
 
 				if (!string.IsNullOrEmpty(foundDir))
 				{
-					var findings = Finder.FindAll(foundDir);
+					var findings = ImportFinder.FindAll(foundDir);
 
-
+					findings.ForEach(ff => ff.Treatment = ImportTreatment.Overwrite);
+					
+					findings.ForEach(ff => Album.ImportItem(ff));
 				}
 			}
 		}
