@@ -1,6 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Bild.ViewModels"
         xmlns:file="using:Bild.Core.Files"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,11 +7,7 @@
         x:Class="Bild.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Background="White"
-        Title="Bild">
-
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+        Title="{Binding ProjectPath}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -50,7 +45,7 @@
                     <TreeDataTemplate
                         ItemsSource="{Binding Dirs}">
                         <TextBlock
-                            Text="{Binding MediaName}" />
+                            Text="{Binding Filename}" />
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>

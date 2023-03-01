@@ -1,4 +1,5 @@
 ﻿using Bild.Core.Environment;
+using System.Collections.ObjectModel;
 
 namespace Bild.Core.Files
 {
@@ -6,51 +7,84 @@ namespace Bild.Core.Files
 	{
 		public Dir(string path)
 		{
-			MediaPath = path;
-			MediaName = Path.GetFileName(path) ??
+			AbsolutePath = path;
+			Filename = Path.GetFileName(path) ??
 				throw new Exception("Directory name cannot be determined!");
 		}
 
-		protected IEnumerable<Dir>? m_dirs = null;
-		public IEnumerable<Dir> Dirs
+		protected ObservableCollection<Dir>? m_dirs;
+		public ObservableCollection<Dir> Dirs
 		{
-			get => m_dirs ?? FindDirectories(ref m_dirs, MediaPath);
+			get => m_dirs ?? FindDirectories(ref m_dirs, AbsolutePath);
 			set => m_dirs = value;
 		}
 
-		protected IEnumerable<File>? m_files = null;
-		public IEnumerable<File> Files
+		protected ObservableCollection<File>? m_files;
+		public ObservableCollection<File> Files
 		{
 			get => m_files ?? FindFiles(ref m_files, this);
 			set => m_files = value;
 		}
 
-		public MediaType MediaType => MediaTypeHelper.GetMediaType(MediaName);
-		public string MediaName { get; }
-		public string MediaPath { get; }
+		public MediaType MediaType => MediaTypeHelper.GetMediaType(Filename);
+		public string Filename { get; }
+		public string AbsolutePath { get; }
 
-		private static IEnumerable<Dir> FindDirectories(ref IEnumerable<Dir>? dirs, string path)
+		public Dir GetOrCreateDir(string name)
 		{
-			if (!Directory.Exists(path))
-				return new List<Dir>();
+			var dir = Dirs.Where(dd => Equals(dd.Filename, name)).FirstOrDefault();
 
-			dirs = from dd in Directory.EnumerateDirectories(path)
-				   where dd != "." && dd != ".."
-				   select new Dir(dd);
+			if (dir is null)
+			{
+				var newPath = Path.Combine(AbsolutePath, name);
+
+				Directory.CreateDirectory(newPath);
+
+				dir = new Dir(newPath);
+
+				Dirs.Add(dir);
+			}
+
+			return dir;
+		}
+
+		private static ObservableCollection<Dir> FindDirectories(ref ObservableCollection<Dir>? dirs, string path)
+		{
+			IEnumerable<Dir> findings;
+
+			if (!Directory.Exists(path))
+			{
+				// No findings, folder does not exist
+				findings = Array.Empty<Dir>();
+			}
+			else
+			{
+				findings = from dd in Directory.EnumerateDirectories(path)
+						   where dd != "." && dd != ".."
+						   select new Dir(dd);
+			}
+
+			// Make this observable ...
+			dirs = new ObservableCollection<Dir>(findings);
+
 			return dirs;
 		}
 
-		private static IEnumerable<File> FindFiles(ref IEnumerable<File>? files, Dir dir)
+		private static ObservableCollection<File> FindFiles(ref ObservableCollection<File>? files, Dir dir)
 		{
 			// Find files in this directory
-			files = from ff in Directory.EnumerateFiles(dir.MediaPath) select new File(ff);
+			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath) select new File(ff);
+
 			// Find files in all subdirectories, if any
-			files = files.Concat(from subDir in dir.Dirs from subFile in subDir.Files select subFile);
+			findings = findings.Concat(from subDir in dir.Dirs from subFile in subDir.Files select subFile);
+
+			// Make this observable ...
+			files = new ObservableCollection<File>(findings);
+
 			// keep and return
 			return files;
 		}
 
-		public override string ToString()
-			=> $"{MediaType} {MediaPath}";
+		public override string ToString() => $"{MediaType} {AbsolutePath}";
 	}
 }

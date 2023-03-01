@@ -2,14 +2,15 @@
 {
 	public class File
 	{
-		public File(string path)
+		public File(string absolutePath)
 		{
-			Path = path;
+			AbsolutePath = absolutePath;
 		}
 
-		public string Path { get; }
+		public string AbsolutePath { get; }
 
-		public override string ToString()
-			=> $"{Path}";
+		public string Filename => Path.GetFileName(AbsolutePath);
+
+		public override string ToString() => $"{AbsolutePath}";
 	}
 }

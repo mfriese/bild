@@ -1,8 +1,8 @@
 ﻿namespace Bild.Core.Importer
 {
-	public enum Treatment
+	public enum ImportTreatment
 	{
-		Normal = 0,
+		Unknown = 0,
 		Overwrite = 1,
 		Skip = 2
 	}

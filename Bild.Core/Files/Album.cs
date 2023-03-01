@@ -1,6 +1,5 @@
 ﻿using Bild.Core.Environment;
 using Bild.Core.Importer;
-using MetadataExtractor.Util;
 
 namespace Bild.Core.Files
 {
@@ -13,55 +12,37 @@ namespace Bild.Core.Files
 
 		public Settings Settings { get; }
 
-		public List<Item> ImportQueue { get; } = new();
-
-		public void PrepareDirImport(string path)
-			=> ImportQueue.AddRange(Finder.FindAll(path));
-
-		public void AdjustDirImport(Treatment treatment = Treatment.Overwrite)
-			=> ImportQueue.ForEach(ii => ii.Treatment = ii.Exisits(Settings) ? treatment : Treatment.Normal);
-
-		public void ExecuteDirImport()
+		public void ImportItem(ImportItem item)
 		{
-			ImportQueue.ForEach(ii =>
+			// Get the directory for the year from the media dir
+			Dir yearDir = GetOrCreateDir($"{item.Meta.Year}");
+
+			// Determine where to put the new item and get that folder
+			var mediaName = MediaTypeHelper.GetMediaName(item.Meta.MediaType);
+
+			// Get the directory for the item, this is where we'll put it
+			Dir targetDir = yearDir.GetOrCreateDir(mediaName);
+
+			// create a filename for the given item ...
+			var filename = Settings.GetFileName(item.FileType, item.Meta.DateTime);
+			
+			// Compare filenames for now, if there a conflicts
+			if (targetDir.Files.Any(ff => Equals(ff.Filename, filename)))
 			{
-				InitializeMediaDirectory(ii.Meta.DateTime);
-
-				var destination = Settings.GetFilePath(
-					ii.Meta.MediaType, ii.FileType, ii.Meta.DateTime);
-
-				if (ii.Treatment == Treatment.Skip)
+				// If supposed to skip or undetermined: do not overwrite!
+				if (item.Treatment == ImportTreatment.Skip ||
+					item.Treatment == ImportTreatment.Unknown)
 					return;
+			}
 
-				if (ii.Treatment == Treatment.Overwrite &&
-					System.IO.File.Exists(destination))
-					System.IO.File.Delete(destination);
+			// Build the full path of where to copy the file
+			var targetPath = Path.Combine(targetDir.AbsolutePath, filename);
 
-				System.IO.File.Copy(ii.AbsolutePath, destination);
-			});
-		}
+			// Do copy
+			System.IO.File.Copy(item.AbsolutePath, targetPath);
 
-		protected void InitializeMediaDirectory(DateTime dateTime)
-		{
-			if (!Directory.Exists(Settings.ProjectFolder))
-				throw new Exception("Project folder not existing.");
-
-			if (!Directory.Exists(Settings.GetMediaFolder()))
-				Directory.CreateDirectory(Settings.GetMediaFolder());
-
-			if (!Directory.Exists(Settings.GetGroupFolder(dateTime)))
-				Directory.CreateDirectory(Settings.GetGroupFolder(dateTime));
-
-			var mediaTypes = new MediaType[]
-			{
-				MediaType.Picture,
-				MediaType.Video,
-				MediaType.Audio
-			};
-
-			foreach (var mediaType in mediaTypes)
-				if (!Directory.Exists(Settings.GetFolder(mediaType, dateTime)))
-					Directory.CreateDirectory(Settings.GetFolder(mediaType, dateTime));
+			// Add to file datastructure
+			targetDir.Files.Add(new File(targetPath));
 		}
 	}
 }

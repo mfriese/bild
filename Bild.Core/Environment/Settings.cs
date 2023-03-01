@@ -16,11 +16,10 @@ namespace Bild.Core.Environment
 
 	public enum MediaType
 	{
-		Unknown = 0,
-		Multiple = 1,
-		Picture = 2,
-		Video = 3,
-		Audio = 4
+		Other = 0,
+		Picture = 1,
+		Video = 2,
+		Audio = 3
 	}
 
 	public static class SettingsExtension
@@ -57,8 +56,7 @@ namespace Bild.Core.Environment
 	{
 		internal static readonly string[] Folders = new string[]
 		{
-			"unknown",
-			"multiple",
+			"other",
 			"picture",
 			"video",
 			"audio"
@@ -67,7 +65,9 @@ namespace Bild.Core.Environment
 		public static MediaType GetMediaType(string name)
 			=> (from ii in Enumerable.Range(0, Folders.Length)
 				where string.Equals(Folders[ii], name, StringComparison.InvariantCultureIgnoreCase)
-				select (MediaType)ii).FirstOrDefault(MediaType.Unknown);
-	}
+				select (MediaType)ii).FirstOrDefault(MediaType.Other);
 
+		public static string GetMediaName(MediaType mediaType)
+			=> Folders[(int)mediaType];
+	}
 }

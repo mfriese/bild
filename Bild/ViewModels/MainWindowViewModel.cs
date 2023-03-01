@@ -2,12 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Bild.Core.Environment;
 using Bild.Core.Files;
+using Bild.Core.Importer;
 using ReactiveUI;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reactive;
-using System.Threading.Tasks;
 
 namespace Bild.ViewModels
 {
@@ -20,6 +18,7 @@ namespace Bild.ViewModels
 			Repository = repository;
 			
 			Album = new Album(Repository.Settings);
+			
 		}
 
 		public Repository Repository { get; }
@@ -28,7 +27,23 @@ namespace Bild.ViewModels
 
 		void ImportFolderImpl()
 		{
+			var lifetime = Avalonia.Application.Current?.ApplicationLifetime;
 
+			if (lifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			{
+				var dialog = new OpenFolderDialog();
+				var findDirTask = dialog.ShowAsync(desktop.MainWindow);
+				var foundDir = findDirTask.GetAwaiter().GetResult();
+
+				if (!string.IsNullOrEmpty(foundDir))
+				{
+					var findings = ImportFinder.FindAll(foundDir);
+
+					findings.ForEach(ff => ff.Treatment = ImportTreatment.Overwrite);
+					
+					findings.ForEach(ff => Album.ImportItem(ff));
+				}
+			}
 		}
 
 		void OpenProjectImpl()
@@ -51,13 +66,14 @@ namespace Bild.ViewModels
 					SelectedPath = null;
 					Files = null;
 
-					SendPropertyChanged(nameof(Album));
-					SendPropertyChanged(nameof(SelectedPath));
-					SendPropertyChanged(nameof(Files));
+					SetProperty(ref m_album, new Album(Repository.Settings), nameof(Album));
+					SetProperty(ref m_selectedPath, null, nameof(SelectedPath));
+					SetProperty(ref m_files, null, nameof(Files));
 				}
 			}
 		}
 
+		protected Album? m_album;
 		public Album Album { get; protected set; }
 
 		private Dir? m_selectedPath;
@@ -66,13 +82,18 @@ namespace Bild.ViewModels
 			get => m_selectedPath;
 			set
 			{
-				m_selectedPath = value;
-				Files = m_selectedPath?.Files ?? new List<File>();
-
-				SendPropertyChanged(nameof(Files));
+				SetProperty(ref m_selectedPath, value, nameof(SelectedPath));
+				SetProperty(ref m_files, m_selectedPath?.Files, nameof(Files));
 			}
 		}
 
-		public IEnumerable<File>? Files { get; set; }
+		protected IEnumerable<File>? m_files;
+		public IEnumerable<File>? Files
+		{
+			get => m_files;
+			set => SetProperty(ref m_files, value, nameof(Files));
+		}
+
+		public string ProjectPath => Repository.Settings.ProjectFolder;
 	}
 }

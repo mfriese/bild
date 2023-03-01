@@ -7,9 +7,10 @@ namespace Bild.Core.Environment
 	/// </summary>
 	public class Repository
 	{
-		public Repository(IFileConfig fileConfig) => FileConfig = fileConfig;
+		public Repository(IFileConfig fileConfig)
+			=> FileConfig = fileConfig;
 
-		private IFileConfig FileConfig { get; }
+		protected IFileConfig FileConfig { get; }
 
 		public Settings Settings
 		{
