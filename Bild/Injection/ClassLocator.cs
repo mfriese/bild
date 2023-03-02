@@ -19,10 +19,17 @@ namespace Bild.Injection
 			Locator.CurrentMutable.RegisterConstant(new MainWindowViewModel(
 				Locator.Current.GetService<Repository>()));
 
+			Locator.CurrentMutable.RegisterConstant(new ImportDialogViewModel());
+
 			// UI Classes to be registered
 			Locator.CurrentMutable.RegisterConstant(new MainWindow()
 			{
 				DataContext = Locator.Current.GetService<MainWindowViewModel>()
+			});
+
+			Locator.CurrentMutable.RegisterConstant(new ImportDialog()
+			{
+				DataContext = Locator.Current.GetService<ImportDialogViewModel>()
 			});
 		}
 	}
