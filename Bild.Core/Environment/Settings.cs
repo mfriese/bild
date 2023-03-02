@@ -19,7 +19,8 @@ namespace Bild.Core.Environment
 		Other = 0,
 		Picture = 1,
 		Video = 2,
-		Audio = 3
+		Audio = 3,
+		Unknown = 4
 	}
 
 	public static class SettingsExtension

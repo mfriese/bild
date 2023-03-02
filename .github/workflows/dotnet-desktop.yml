@@ -6,12 +6,15 @@ on:
       - main
 
 jobs:
+
   build:
     name: Build project
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet-version: ['6.0.x' ]
+#        os: [windows-latest, macOs-latest]
+        os: [macOs-latest]
+        dotnet-version: ['6.0.x']
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
@@ -24,20 +27,32 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal
-      - name: Upload Artifacts
+      - name: Upload Artifacts (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
         uses: actions/upload-artifact@v3
         with:
-          name: artifacts-${{ github.run_number }}
+          name: artifacts-${{ github.run_number }}-${{ matrix.os }}
           path: D:\a\bild\bild\Bild\bin\Release\net6.0\
+      - name: Upload Artifacts (MacOS)
+        if: ${{ matrix.os == 'macOs-latest' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifacts-${{ github.run_number }}-${{ matrix.os }}
+          path: /Users/runner/work/bild/bild/Bild/bin/Release/net6.0/
+
   release:
     name: Release project
     runs-on: windows-latest
+    strategy:
+      matrix:
+#        os: [windows-latest, macOs-latest]
+        os: [macOs-latest]
     needs: build
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: artifacts-${{ github.run_number }}
+          name: artifacts-${{ github.run_number }}-${{ matrix.os }}
       - name: Test artifact download
         run: ls -R
       - name: Archive project content
@@ -62,4 +77,17 @@ jobs:
           asset_path: release-${{ github.run_number }}.zip
           asset_name: release-v${{ github.run_number }}.zip
           asset_content_type: application/zip
+      - name: Debug output
+        run: echo "${{ steps.create-new-release.outputs.upload_url }}"
+        env:
+          new_release_uri: ${{ steps.create-new-release.outputs.upload_url }}
+
+  debugging:
+    name: Some debugging examples
+    runs-on: windows-latest
+    needs: release
+    steps:
+      - name: Show upload uri
+        run: echo ${{ env.new_release_uri }}
+          
         

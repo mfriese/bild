@@ -1,4 +1,5 @@
-﻿using Bild.Core.Environment;
+﻿using Bild.Core.Data;
+using Bild.Core.Environment;
 using System.Collections.ObjectModel;
 
 namespace Bild.Core.Files
@@ -72,8 +73,15 @@ namespace Bild.Core.Files
 
 		private static ObservableCollection<File> FindFiles(ref ObservableCollection<File>? files, Dir dir)
 		{
+			var allFiles = Directory.EnumerateFiles(dir.AbsolutePath);
+
+			foreach (var ff in allFiles)
+				Console.WriteLine(ff);
+
 			// Find files in this directory
-			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath) select new File(ff);
+			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath)
+						   where Media.FindMediaType(ff) != MediaType.Unknown
+						   select new File(ff);
 
 			// Find files in all subdirectories, if any
 			findings = findings.Concat(from subDir in dir.Dirs from subFile in subDir.Files select subFile);

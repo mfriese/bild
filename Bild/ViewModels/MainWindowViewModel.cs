@@ -6,6 +6,7 @@ using Bild.Core.Importer;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Threading.Tasks;
 
 namespace Bild.ViewModels
 {
@@ -13,8 +14,8 @@ namespace Bild.ViewModels
 	{
 		public MainWindowViewModel(Repository repository)
 		{
-			ImportFolder = ReactiveCommand.Create(ImportFolderImpl);
-			OpenProject = ReactiveCommand.Create(OpenProjectImpl);
+			ImportFolder = ReactiveCommand.CreateFromTask(() => ImportFolderImpl());
+			OpenProject = ReactiveCommand.CreateFromTask(() => OpenProjectImpl());
 			Repository = repository;
 			
 			Album = new Album(Repository.Settings);
@@ -25,15 +26,14 @@ namespace Bild.ViewModels
 		public ReactiveCommand<Unit, Unit> ImportFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenProject { get; }
 
-		void ImportFolderImpl()
+		async Task ImportFolderImpl()
 		{
 			var lifetime = Avalonia.Application.Current?.ApplicationLifetime;
 
 			if (lifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				var dialog = new OpenFolderDialog();
-				var findDirTask = dialog.ShowAsync(desktop.MainWindow);
-				var foundDir = findDirTask.GetAwaiter().GetResult();
+				var foundDir = await dialog.ShowAsync(desktop.MainWindow);
 
 				if (!string.IsNullOrEmpty(foundDir))
 				{
@@ -46,15 +46,14 @@ namespace Bild.ViewModels
 			}
 		}
 
-		void OpenProjectImpl()
+        async Task OpenProjectImpl()
 		{
 			var lifetime = Avalonia.Application.Current?.ApplicationLifetime;
 
 			if (lifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				var dialog = new OpenFolderDialog();
-				var findDirTask = dialog.ShowAsync(desktop.MainWindow);
-				var foundDir = findDirTask.GetAwaiter().GetResult();
+				var foundDir = await dialog.ShowAsync(desktop.MainWindow);
 
 				if (!string.IsNullOrEmpty(foundDir))
 				{

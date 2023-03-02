@@ -62,17 +62,18 @@
             Grid.Column="1"
             Items="{Binding Files}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListBox.ItemsPanel>
+            <!--ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel />
                 </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
+            </ListBox.ItemsPanel-->
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Image
+                    <TextBlock Text="{Binding AbsolutePath}" />
+                    <!--Image
                         Width="128"
                         Height="128"
-                        Source="{Binding Converter={StaticResource bitmapConverter}}" />
+                        Source="{Binding Converter={StaticResource bitmapConverter}}" /-->
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

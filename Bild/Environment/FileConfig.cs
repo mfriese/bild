@@ -28,8 +28,7 @@ namespace Bild.Environment
 
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			{
-				var msg = "Messagebus implementation for OSX is absent!";
-				throw new EntryPointNotFoundException(msg);
+				return "~";
 			}
 
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
