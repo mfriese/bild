@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:file="using:Bild.Core.Files"
+        xmlns:c="using:Bild.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -9,6 +10,11 @@
         Background="White"
         Title="{Binding ProjectPath}">
 
+    <Window.Resources>
+        <c:BitmapValueConverter
+            x:Key="bitmapConverter"/>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
@@ -35,7 +41,7 @@
             </MenuItem>
         </Menu>
 
-        <Grid 
+        <Grid
             Grid.Row="1"
             Grid.Column="0">
             <TreeView
@@ -54,8 +60,21 @@
         <ListBox
             Grid.Row="1"
             Grid.Column="1"
-            Items="{Binding Files}">
-            
+            Items="{Binding Files}"
+            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Image
+                        Width="128"
+                        Height="128"
+                        Source="{Binding Converter={StaticResource bitmapConverter}}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
         </ListBox>
     </Grid>
 
