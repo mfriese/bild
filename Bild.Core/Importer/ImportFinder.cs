@@ -1,4 +1,6 @@
-﻿namespace Bild.Core.Importer
+﻿using Bild.Core.Data;
+
+namespace Bild.Core.Importer
 {
 	public static class ImportFinder
 	{
@@ -14,7 +16,9 @@
 				findings = findings.Concat(FindAll(dir));
 			}
 
-			return new List<ImportItem>(from ff in findings where ff.IsMedia select ff);
+			return new List<ImportItem>(from ff in findings
+										where ff.FileType != FileTypeExt.Unknown
+										select ff);
 		}
 	}
 }

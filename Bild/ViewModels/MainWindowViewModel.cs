@@ -5,6 +5,7 @@ using Bild.Core.Files;
 using Bild.Core.Importer;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reactive;
 
 namespace Bild.ViewModels
@@ -15,6 +16,7 @@ namespace Bild.ViewModels
 		{
 			ImportFolder = ReactiveCommand.Create(ImportFolderImpl);
 			OpenProject = ReactiveCommand.Create(OpenProjectImpl);
+			OpenFolder = ReactiveCommand.Create<string>(OpenFolderImpl);
 			Repository = repository;
 			
 			Album = new Album(Repository.Settings);
@@ -24,6 +26,15 @@ namespace Bild.ViewModels
 		public Repository Repository { get; }
 		public ReactiveCommand<Unit, Unit> ImportFolder { get; }
 		public ReactiveCommand<Unit, Unit> OpenProject { get; }
+		public ReactiveCommand<string, Unit> OpenFolder { get; }
+
+		void OpenFolderImpl(string absolutePath)
+		{
+			var proc = new Process();
+			proc.StartInfo.FileName = "C:\\WINDOWS\\explorer.exe";
+			proc.StartInfo.Arguments = absolutePath;
+			proc.Start();
+		}
 
 		void ImportFolderImpl()
 		{

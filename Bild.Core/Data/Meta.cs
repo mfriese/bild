@@ -1,66 +1,65 @@
-﻿using Bild.Core.Environment;
-using MetadataExtractor;
+﻿using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
-using MetadataExtractor.Formats.FileType;
+using MetadataExtractor.Util;
 
 namespace Bild.Core.Data
 {
 	public sealed class Meta
 	{
 		public Meta(string path)
-		{
-			Path = path;
+			=> AbsolutePath = path;
 
-			Exif = ImageMetadataReader.ReadMetadata(path);
-		}
-
-		public string Path { get; }
-		private IReadOnlyList<MetadataExtractor.Directory> Exif { get; }
-
-		public string Filename
-			=> System.IO.Path.GetFileName(Path);
-
+		public string AbsolutePath { get; }
+		public string Filename => Path.GetFileName(AbsolutePath);
 		public string Extension
-			=> System.IO.Path.GetExtension(Path);
-
-		private DateTime? m_dateTime;
-		public DateTime DateTime
 		{
 			get
 			{
-				if (!m_dateTime.HasValue)
-				{
-					m_dateTime = Exif.
-						OfType<ExifIfd0Directory>().FirstOrDefault()?.
-						GetDateTime(ExifIfd0Directory.TagDateTime) ?? DateTime.MinValue;
-				}
+				var extension = Path.GetExtension(AbsolutePath);
 
-				return m_dateTime.Value;
+				if (string.IsNullOrEmpty(extension))
+					return string.Empty;
+
+				if (extension[0] == '.')
+					return extension[1..];
+
+				return extension;
 			}
 		}
 
-		private string m_fileType = string.Empty;
-		public string FileType
+		private DateTime? m_dateCreated;
+		public DateTime DateCreated
 		{
 			get
 			{
-				if (string.IsNullOrEmpty(m_fileType))
+				if (!m_dateCreated.HasValue)
 				{
-					m_fileType = Exif.
-						OfType<FileTypeDirectory>().FirstOrDefault()?.
-						GetDescription(FileTypeDirectory.TagDetectedFileTypeName) ?? "Unknown";
+					try
+					{
+						// This might throw, use file access as a fallback
+						var exif = ImageMetadataReader.ReadMetadata(AbsolutePath);
+
+						m_dateCreated = exif.
+							OfType<ExifIfd0Directory>().FirstOrDefault()?.
+							GetDateTime(ExifDirectoryBase.TagDateTime);
+					}
+					catch(Exception)
+					{
+					}
 				}
 
-				return m_fileType;
+				if (!m_dateCreated.HasValue)
+				{
+					// If this won't work we will not catch the exception!
+					m_dateCreated = File.GetCreationTime(AbsolutePath);
+				}
+
+				return m_dateCreated.Value;
 			}
 		}
 
-		public MediaType MediaType { get; } = MediaType.Picture;
-
-		public int Year => DateTime.Year;
-		public int Month => DateTime.Month;
-		public int Day => DateTime.Day;
+		public int Year => DateCreated.Year;
+		public int Month => DateCreated.Month;
+		public int Day => DateCreated.Day;
 	}
-
-	
 }
