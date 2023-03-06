@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Bild.Core.Environment;
 using Bild.Core.Files;
 using Bild.Core.Importer;
+using Bild.Environment;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,7 +32,7 @@ namespace Bild.ViewModels
 		void OpenFolderImpl(string absolutePath)
 		{
 			var proc = new Process();
-			proc.StartInfo.FileName = "C:\\WINDOWS\\explorer.exe";
+			proc.StartInfo.FileName = SystemSpecifics.FileExplorer;
 			proc.StartInfo.Arguments = absolutePath;
 			proc.Start();
 		}

@@ -80,7 +80,7 @@ namespace Bild.Core.Files
 
 			// Find files in this directory
 			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath)
-						   where MediaTypeHelper.GetFileType(ff) != FileTypeExt.Unknown
+						   where MediaTypeHelper.GetFileType(ff) != FileTypeExt.Unknown && !FileIsHidden(ff)
 						   select new File(ff);
 
 			// Find files in all subdirectories, if any
@@ -91,6 +91,13 @@ namespace Bild.Core.Files
 
 			// keep and return
 			return files;
+
+			// I feel like we should ignore hidden files ...
+			static bool FileIsHidden(string absolutePath)
+			{
+				var attributes = System.IO.File.GetAttributes(absolutePath);
+				return (attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+			}
 		}
 
 		public override string ToString() => $"{MediaType} {AbsolutePath}";

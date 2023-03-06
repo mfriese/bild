@@ -1,13 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Bild.Environment
 {
-	public class SystemSpecifics
+	public static class SystemSpecifics
 	{
+		public static string FileExplorer
+		{
+			get
+			{
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+				{
+					return "explorer";
+				}
 
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				{
+					return "open";
+				}
+
+				throw new InvalidOperationException("Platform not supported.");
+			}
+		}
 	}
 }
