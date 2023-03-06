@@ -80,7 +80,7 @@ namespace Bild.Core.Files
 
 			// Find files in this directory
 			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath)
-						   where Media.FindMediaType(ff) != MediaType.Unknown
+						   where MediaTypeHelper.GetFileType(ff) != FileTypeExt.Unknown
 						   select new File(ff);
 
 			// Find files in all subdirectories, if any

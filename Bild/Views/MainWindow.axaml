@@ -8,6 +8,7 @@
         x:Class="Bild.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Background="White"
+        x:Name="PART_Window"
         Title="{Binding ProjectPath}">
 
     <Window.Resources>
@@ -50,8 +51,10 @@
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate
                         ItemsSource="{Binding Dirs}">
-                        <TextBlock
-                            Text="{Binding Filename}" />
+                        <Button
+                            Content="{Binding Filename}"
+                            Command="{Binding DataContext.OpenFolder, ElementName=PART_Window}"
+                            CommandParameter="{Binding AbsolutePath}" />
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
@@ -62,14 +65,10 @@
             Grid.Column="1"
             Items="{Binding Files}"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <!--ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel-->
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding AbsolutePath}" />
+                    <TextBlock
+                        Text="{Binding AbsolutePath}" />
                     <!--Image
                         Width="128"
                         Height="128"

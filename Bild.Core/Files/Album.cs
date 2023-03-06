@@ -1,4 +1,5 @@
-﻿using Bild.Core.Environment;
+﻿using Bild.Core.Data;
+using Bild.Core.Environment;
 using Bild.Core.Importer;
 
 namespace Bild.Core.Files
@@ -6,9 +7,7 @@ namespace Bild.Core.Files
 	public class Album : Dir
 	{
 		public Album(Settings settings) : base(settings.GetMediaFolder())
-		{
-			Settings = settings;
-		}
+			=> Settings = settings;
 
 		public Settings Settings { get; }
 
@@ -18,13 +17,13 @@ namespace Bild.Core.Files
 			Dir yearDir = GetOrCreateDir($"{item.Meta.Year}");
 
 			// Determine where to put the new item and get that folder
-			var mediaName = MediaTypeHelper.GetMediaName(item.Meta.MediaType);
+			var mediaName = MediaTypeHelper.GetMediaName(item.FileType);
 
 			// Get the directory for the item, this is where we'll put it
 			Dir targetDir = yearDir.GetOrCreateDir(mediaName);
 
 			// create a filename for the given item ...
-			var filename = Settings.GetFileName(item.FileType, item.Meta.DateTime);
+			var filename = Settings.GetFileName(item.FileType, item.Meta.DateCreated);
 			
 			// Compare filenames for now, if there a conflicts
 			if (targetDir.Files.Any(ff => Equals(ff.Filename, filename)))
