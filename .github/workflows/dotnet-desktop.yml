@@ -14,7 +14,7 @@ jobs:
       matrix:
 #        os: [windows-latest, macOs-latest]
         os: [macOs-latest]
-        dotnet-version: ['6.0.x']
+        dotnet-version: ['9.0.x']
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
