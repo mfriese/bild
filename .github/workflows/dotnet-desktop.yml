@@ -81,13 +81,3 @@ jobs:
         run: echo "${{ steps.create-new-release.outputs.upload_url }}"
         env:
           new_release_uri: ${{ steps.create-new-release.outputs.upload_url }}
-
-  debugging:
-    name: Some debugging examples
-    runs-on: windows-latest
-    needs: release
-    steps:
-      - name: Show upload uri
-        run: echo ${{ env.new_release_uri }}
-          
-        
