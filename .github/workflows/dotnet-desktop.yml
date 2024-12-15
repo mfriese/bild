@@ -32,13 +32,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ github.run_number }}-${{ matrix.os }}
-          path: D:\a\bild\bild\Bild\bin\Release\net6.0\
+          path: D:\a\bild\bild\Bild\bin\Release\net9.0\
       - name: Upload Artifacts (MacOS)
         if: ${{ matrix.os == 'macOs-latest' }}
         uses: actions/upload-artifact@v3
         with:
           name: artifacts-${{ github.run_number }}-${{ matrix.os }}
-          path: /Users/runner/work/bild/bild/Bild/bin/Release/net6.0/
+          path: /Users/runner/work/bild/bild/Bild/bin/Release/net9.0/
 
   release:
     name: Release project
