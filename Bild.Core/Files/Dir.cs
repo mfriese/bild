@@ -1,5 +1,4 @@
-﻿using Bild.Core.Data;
-using Bild.Core.Environment;
+﻿using Bild.Core.Environment;
 using System.Collections.ObjectModel;
 
 namespace Bild.Core.Files
@@ -8,98 +7,62 @@ namespace Bild.Core.Files
 	{
 		public Dir(string path)
 		{
-			AbsolutePath = path;
-			Filename = Path.GetFileName(path) ??
-				throw new Exception("Directory name cannot be determined!");
+			AbsolutePath = Path.GetFullPath(path);
 		}
 
-		protected ObservableCollection<Dir>? m_dirs;
-		public ObservableCollection<Dir> Dirs
-		{
-			get => m_dirs ?? FindDirectories(ref m_dirs, AbsolutePath);
-			set => m_dirs = value;
-		}
-
-		protected ObservableCollection<File>? m_files;
-		public ObservableCollection<File> Files
-		{
-			get => m_files ?? FindFiles(ref m_files, this);
-			set => m_files = value;
-		}
-
-		public MediaType MediaType => MediaTypeHelper.GetMediaType(Filename);
-		public string Filename { get; }
 		public string AbsolutePath { get; }
 
-		public Dir GetOrCreateDir(string name)
-		{
-			var dir = Dirs.Where(dd => Equals(dd.Filename, name)).FirstOrDefault();
+		public IEnumerable<Dir> Dirs => FindDirectories();
+		public IEnumerable<File> Files => FindFiles();
 
-			if (dir is null)
-			{
-				var newPath = Path.Combine(AbsolutePath, name);
-
-				Directory.CreateDirectory(newPath);
-
-				dir = new Dir(newPath);
-
-				Dirs.Add(dir);
-			}
-
-			return dir;
-		}
-
-		private static ObservableCollection<Dir> FindDirectories(ref ObservableCollection<Dir>? dirs, string path)
+		private IEnumerable<Dir> FindDirectories()
 		{
 			IEnumerable<Dir> findings;
 
-			if (!Directory.Exists(path))
+			if (!Directory.Exists(AbsolutePath))
 			{
-				// No findings, folder does not exist
-				findings = Array.Empty<Dir>();
+				findings = [];
 			}
 			else
 			{
-				findings = from dd in Directory.EnumerateDirectories(path)
-						   where dd != "." && dd != ".."
-						   select new Dir(dd);
+				try
+				{
+					findings = from dd in Directory.EnumerateDirectories(AbsolutePath)
+							   where dd != "." && dd != ".."
+							   select new Dir(dd);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					findings = [];
+				}
 			}
 
-			// Make this observable ...
-			dirs = new ObservableCollection<Dir>(findings);
-
-			return dirs;
+			return findings;
 		}
 
-		private static ObservableCollection<File> FindFiles(ref ObservableCollection<File>? files, Dir dir)
+		private IEnumerable<File> FindFiles()
 		{
-			var allFiles = Directory.EnumerateFiles(dir.AbsolutePath);
+			IEnumerable<File> findings;
 
-			foreach (var ff in allFiles)
-				Console.WriteLine(ff);
-
-			// Find files in this directory
-			var findings = from ff in Directory.EnumerateFiles(dir.AbsolutePath)
-						   where MediaTypeHelper.GetFileType(ff) != FileTypeExt.Unknown && !FileIsHidden(ff)
-						   select new File(ff);
-
-			// Find files in all subdirectories, if any
-			findings = findings.Concat(from subDir in dir.Dirs from subFile in subDir.Files select subFile);
-
-			// Make this observable ...
-			files = new ObservableCollection<File>(findings);
-
-			// keep and return
-			return files;
-
-			// I feel like we should ignore hidden files ...
-			static bool FileIsHidden(string absolutePath)
+			if (!Directory.Exists(AbsolutePath))
 			{
-				var attributes = System.IO.File.GetAttributes(absolutePath);
-				return (attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+				// No findings, folder does not exist
+				findings = [];
 			}
-		}
+			else
+			{
+				try
+				{
+					findings = from ff in Directory.EnumerateFiles(AbsolutePath)
+							   select new File(ff);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					findings = [];
+				}
+			}
 
-		public override string ToString() => $"{MediaType} {AbsolutePath}";
+			return findings;
+		}
 	}
 }
