@@ -1,23 +1,19 @@
-using Avalonia;
-using Avalonia.ReactiveUI;
-using System;
+﻿using Bild.Core.Importer;
 
-namespace Bild
+Console.WriteLine("Hello, World!");
+
+var files = Finder.FindFiles(new Bild.Core.Files.Dir("/Users/mfriese/Pictures/"));
+
+foreach (var file in files)
 {
-	internal class Program
-	{
-		// Initialization code. Don't use any Avalonia, third-party APIs or any
-		// SynchronizationContext-reliant code before AppMain is called: things
-		// aren't initialized yet and stuff might break.
-		[STAThread]
-		public static void Main(string[] args) => BuildAvaloniaApp()
-			.StartWithClassicDesktopLifetime(args);
+    Console.WriteLine(file.AbsolutePath);
 
-		// Avalonia configuration, don't remove; also used by visual designer.
-		public static AppBuilder BuildAvaloniaApp()
-			=> AppBuilder.Configure<App>()
-				.UsePlatformDetect()
-				.LogToTrace()
-				.UseReactiveUI();
-	}
+    if (file.ExifCreationDate is not null)
+        Console.WriteLine("Created exif: " + file.ExifCreationDate);
+    else
+        Console.WriteLine("Created file: " + file.FileCreationDate);
+
+    Console.WriteLine(file.ExifFileType);
+    Console.WriteLine(file.Filename);
+    Console.WriteLine();
 }
