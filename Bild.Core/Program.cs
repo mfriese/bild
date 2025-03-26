@@ -15,15 +15,23 @@ public class Program
 
     public void Execute()
     {
+
+
         var names = Commands.
             Select(cc => cc.CommandName).
             Append(Cancel);
 
         while (true)
         {
+            AnsiConsole.Clear();
+            AnsiConsole.Write(
+            new FigletText("Bild App")
+                .Centered()
+                .Color(Color.White));
+
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title($"Pick the command you want to execute.")
+                    .Title($"Tools to organize photos and videos. Pick a command ...")
                     .PageSize(16)
                     .MoreChoicesText($"[grey](Navigate with arrow keys.)[/]")
                     .AddChoices(names)
