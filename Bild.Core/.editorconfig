@@ -1,0 +1,20 @@
+# C# files
+[*.cs]
+
+#### Core EditorConfig Options ####
+
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+# New line preferences
+end_of_line = crlf
+insert_final_newline = false
+
+dotnet_style_namespace_match_folder_structure = true:error
+
+csharp_style_primary_constructor = false:error
+
+# Make methods without member access static?
+dotnet_diagnostic.CA1822.severity = none
