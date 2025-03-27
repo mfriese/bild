@@ -39,44 +39,24 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
             return 0;
         }
 
-        char answer = AnsiConsole.Prompt(
-            new TextPrompt<char>("How to proceed? [green](a)uto[/] / [yellow](m)anual[/] / [red](c)ancel[/]")
-                .AllowEmpty()
-                .ValidationErrorMessage("[red]Only a, m or c accepted![/]")
-                .Validate(input =>
-                    input == 'a' || input == 'm' || input == 'c'
-                        ? ValidationResult.Success()
-                        : ValidationResult.Error()
-                )
-            );
-
-        if (answer == 'c')
+        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to delete duplicated files?")))
             return CancellationMessage(0);
 
-        if (answer == 'm')
-            return CancellationMessage(0);
-
-        if (answer == 'a')
-            return HandleAutomatic(hashes);
-
-        return CancellationMessage(0);
-    }
-
-    private int HandleAutomatic(List<IGrouping<string, string>> hashes)
-    {
         var table = new Table()
             .Border(TableBorder.Rounded)
             .BorderColor(Color.Grey)
-            .AddColumn("[cyan]Hash[/]")
-            .AddColumn("[grey]Behalten[/]");
+            .AddColumn("[cyan]Hashcode[/]")
+            .AddColumn("[grey]Kept file[/]")
+            .AddColumn("[grey]Deleted count[/]");
 
         AnsiConsole.Live(table)
             .AutoClear(false)
             .Start(ctx =>
             {
-                foreach (var group in hashes)
+                foreach (var group in hashes.Where(hh => 1 < hh.Count()))
                 {
                     var keep = PickShortes(group);
+                    var deleteCount = 0;
 
                     foreach (var file in group)
                     {
@@ -85,6 +65,7 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
                             try
                             {
                                 File.Delete(file);
+                                ++deleteCount;
                             }
                             catch (Exception ex)
                             {
@@ -93,7 +74,7 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
                         }
                     }
 
-                    table.AddRow(group.Key, keep);
+                    table.AddRow(group.Key, keep, $"{deleteCount}");
                     ctx.Refresh();
                 }
             });
