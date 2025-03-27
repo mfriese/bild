@@ -41,8 +41,6 @@ public class GetAllHashesInteractor
 
             foreach (var file in files)
             {
-                Task.Delay(200).Wait();
-
                 try
                 {
                     string hash = getHash.Perform(md5, file);

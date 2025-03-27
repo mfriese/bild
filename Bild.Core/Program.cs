@@ -8,18 +8,27 @@ public class Program
 {
     private const string Cancel = "[red]Cancel[/]";
 
-    private INamedCommand[] Commands { get; } =
-    [
-        new DuplicatesCommand(),
-    ];
+    private CommandApp MakeApp()
+    {
+        var app = new CommandApp();
+
+        app.Configure(config =>
+        {
+            config.AddCommand<DuplicatesCommand>(DuplicatesCommand.Name);
+        });
+
+        return app;
+    }
 
     public void Execute()
     {
+        var app = MakeApp();
 
-
-        var names = Commands.
-            Select(cc => cc.CommandName).
-            Append(Cancel);
+        var options = new string[]
+        {
+            DuplicatesCommand.Name,
+            Cancel
+        };
 
         while (true)
         {
@@ -32,22 +41,25 @@ public class Program
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"Tools to organize photos and videos. Pick a command ...")
-                    .PageSize(16)
+                    // .PageSize(16)
                     .MoreChoicesText($"[grey](Navigate with arrow keys.)[/]")
-                    .AddChoices(names)
+                    .AddChoices(options)
             );
 
             if (selected == Cancel)
             {
-                AnsiConsole.MarkupLine("[red]Goodbye![/]");
+                if (AnsiConsole.Prompt(
+                    new ConfirmationPrompt("Sure you want to exit?")))
+                {
+                    AnsiConsole.MarkupLine("[red]Goodbye![/]");
 
-                return;
+                    return;
+                }
             }
-
-            var command = Commands.First(cc => cc.CommandName == selected);
-
-            var app = new CommandApp<DuplicatesCommand>();
-            app.Run([]);
+            else
+            {
+                app.Run([selected]);
+            }
         }
     }
 }
