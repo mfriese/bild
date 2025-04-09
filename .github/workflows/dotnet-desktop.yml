@@ -29,13 +29,13 @@ jobs:
         run: dotnet test --no-restore --verbosity normal
       - name: Upload Artifacts (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ github.run_number }}-${{ matrix.os }}
           path: D:\a\bild\bild\Bild\bin\Release\net9.0\
       - name: Upload Artifacts (MacOS)
         if: ${{ matrix.os == 'macOs-latest' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts-${{ github.run_number }}-${{ matrix.os }}
           path: /Users/runner/work/bild/bild/Bild/bin/Release/net9.0/
