@@ -6,7 +6,16 @@ public static class FileExtensions
     {
         var directoryName = Path.GetDirectoryName(file.AbsolutePath);
         var newFilepath = Path.Combine(directoryName, newFilename);
-        System.IO.File.Move(file.AbsolutePath, newFilepath, false);
+
+        try
+        {
+            System.IO.File.Move(file.AbsolutePath, newFilepath, false);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
         return new File(newFilepath);
     }
 }

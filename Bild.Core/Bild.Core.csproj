@@ -20,8 +20,4 @@
     <None Include="Q:\bild\Bild.Core\.editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interactors\Files\" />
-  </ItemGroup>
-
 </Project>

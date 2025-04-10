@@ -40,14 +40,20 @@ public class RenameCommand : Command<RenameSettings>
         foreach (var file in creation)
         {
             // TODO name collisions
-            // TODO use correct suffix
 
-            var newName = file.ExifCreationDate?.ToString("yyyy-MM-dd_hh-mm-ss") + ".jpg";
+            var newName = file.ExifCreationDate?.ToString("yyyy-MM-dd_hh-mm-ss") + "." + file.ExifFileNameExtension;
 
             AnsiConsole.MarkupLine($"Renaming {file.Filename} to {newName}");
 
-            file.Rename(newName);
+            var newFile = file.Rename(newName);
+
+            if (newFile is null)
+                AnsiConsole.MarkupLine($"[red]Problem[/] when renaming {file.Filename} to {newName}!");
         }
+
+        AnsiConsole.MarkupLine($"[green]Renamed {creation.Count} files![/]");
+        AnsiConsole.MarkupLine("Press [green]any key[/] to continue ...");
+        Console.ReadKey();
 
         return 0;
     }
