@@ -20,6 +20,8 @@ public class File(string path)
     public DateTime? fileCreationDate;
     public DateTime? FileCreationDate => fileCreationDate ??= GetFileCreationDate();
 
+    public Dir Dir => new(Path.GetDirectoryName(AbsolutePath));
+
     private FileType? GetExifFileType()
     {
         using var stream = new FileStream(AbsolutePath, FileMode.Open, FileAccess.Read);

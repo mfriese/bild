@@ -15,6 +15,7 @@ public class Program
         app.Configure(config =>
         {
             config.AddCommand<DuplicatesCommand>(DuplicatesCommand.Name);
+            config.AddCommand<RenameCommand>(RenameCommand.Name);
         });
 
         return app;
@@ -27,6 +28,7 @@ public class Program
         var options = new string[]
         {
             DuplicatesCommand.Name,
+            RenameCommand.Name,
             Cancel
         };
 

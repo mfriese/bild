@@ -28,6 +28,7 @@ public class DirectorySelectorInteractor
             new SelectionPrompt<string>()
                 .Title($"Pick a subfolder of {rootPath} and {Accept} or {Cancel}.")
                 .PageSize(16)
+                .EnableSearch()
                 .MoreChoicesText($"[grey](Navigate with arrow keys. Pick {Accept} or {Cancel} from the bottom)[/]")
                 .AddChoices(directories)
         );
