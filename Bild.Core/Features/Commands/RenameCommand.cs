@@ -1,5 +1,4 @@
-﻿using Bild.Core.Features.Files;
-using Bild.Core.Features.Importer;
+﻿using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -30,28 +29,70 @@ public class RenameCommand : Command<RenameSettings>
 
         var files = Finder.FindFiles(selectedDir);
 
-        var creation = files.Where(ff => ff.ExifCreationDate is not null).ToList();
+        var table = new Table()
+            .Border(TableBorder.Ascii)
+            .BorderColor(Color.White)
+            .Expand()
+            .AddColumn("[cyan]Filename[/]")
+            .AddColumn("[cyan]Filetype[/]")
+            .AddColumn("[grey]EXIF Created at[/]")
+            .AddColumn("[grey]EXIF File suffix[/]");
 
-        var msg = $"Found {files.Count()} files, but only {creation.Count} have EXIF Creation information! Proceed?";
+        var progress = AnsiConsole.Progress()
+            .AutoClear(false)
+            .AutoRefresh(true)
+            .HideCompleted(false)
+            .Columns(
+            [
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+                new RemainingTimeColumn(),
+                new SpinnerColumn()
+            ]);
 
-        if (!AnsiConsole.Prompt(new ConfirmationPrompt(msg)))
-            return CancellationMessage(0);
+        AnsiConsole.MarkupLine("Now getting Meta Data for each file ...");
 
-        foreach (var file in creation)
+        progress.Start(ctx =>
         {
-            // TODO name collisions
+            var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
-            var newName = file.ExifCreationDate?.ToString("yyyy-MM-dd_hh-mm-ss") + "." + file.ExifFileNameExtension;
+            int index = 0;
 
-            AnsiConsole.MarkupLine($"Renaming {file.Filename} to {newName}");
+            files.ToList().ForEach(ff =>
+            {
+                table.AddRow(
+                    ff.Filename,
+                    ff.ExifFileType?.ToString() ?? "N/A",
+                    ff.ExifCreationDate?.ToString("yyyy-MM-dd hh:mm:ss") ?? "N/A",
+                    ff.ExifFileNameExtension ?? "N/A");
 
-            var newFile = file.Rename(newName);
+                task.Value = ++index;
+            });
+        });
 
-            if (newFile is null)
-                AnsiConsole.MarkupLine($"[red]Problem[/] when renaming {file.Filename} to {newName}!");
-        }
+        AnsiConsole.Write(table);
 
-        AnsiConsole.MarkupLine($"[green]Renamed {creation.Count} files![/]");
+        //var msg = $"Found {files.Count()} files, but only {filesWithExif.Count} have EXIF Creation information! Proceed?";
+
+        //if (!AnsiConsole.Prompt(new ConfirmationPrompt(msg)))
+        //    return CancellationMessage(0);
+
+        //foreach (var file in filesWithExif)
+        //{
+        //    // TODO name collisions
+
+        //    var newName = file.ExifCreationDate?.ToString("yyyy-MM-dd_hh-mm-ss") + "." + file.ExifFileNameExtension;
+
+        //    AnsiConsole.MarkupLine($"Renaming {file.Filename} to {newName}");
+
+        //    var newFile = file.Rename(newName);
+
+        //    if (newFile is null)
+        //        AnsiConsole.MarkupLine($"[red]Problem[/] when renaming {file.Filename} to {newName}!");
+        //}
+
+        //AnsiConsole.MarkupLine($"[green]Renamed {filesWithExif.Count} files![/]");
         AnsiConsole.MarkupLine("Press [green]any key[/] to continue ...");
         Console.ReadKey();
 

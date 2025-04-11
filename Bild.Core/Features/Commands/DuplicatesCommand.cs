@@ -55,7 +55,7 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
             {
                 foreach (var group in hashes.Where(hh => 1 < hh.Count()))
                 {
-                    var keep = PickShortes(group);
+                    var keep = PickShortest(group);
                     var deleteCount = 0;
 
                     foreach (var file in group)
@@ -85,7 +85,7 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
         return CancellationMessage(0);
     }
 
-    private string PickShortes(IEnumerable<string> names)
+    private string PickShortest(IEnumerable<string> names)
         => names.OrderBy(tt => tt.Length).FirstOrDefault();
 
     private int CancellationMessage(int returnValue)
