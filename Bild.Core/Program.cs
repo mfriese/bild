@@ -1,4 +1,5 @@
 ﻿using Bild.Core.Features.Commands;
+using Bild.Core.Interactors.Settings;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -15,6 +16,7 @@ public class Program
         app.Configure(config =>
         {
             config.AddCommand<ConfigureCommand>(ConfigureCommand.Name);
+            config.AddCommand<ImportCommand>(ImportCommand.Name);
             config.AddCommand<DuplicatesCommand>(DuplicatesCommand.Name);
             config.AddCommand<RenameCommand>(RenameCommand.Name);
         });
@@ -29,6 +31,7 @@ public class Program
         var options = new string[]
         {
             DuplicatesCommand.Name,
+            ImportCommand.Name,
             RenameCommand.Name,
             ConfigureCommand.Name,
             Cancel
@@ -61,7 +64,10 @@ public class Program
             }
             else
             {
-                app.Run([selected, "--bla", "Test", "--blubb"]);
+                LoadBaseSettingsInteractor loadBaseSettings = new();
+                var cfg = loadBaseSettings.Perform();
+
+                app.Run([selected, "-w", cfg.WorkDir, "-p", cfg.PhotosDir]);
             }
         }
     }

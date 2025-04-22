@@ -35,7 +35,7 @@ public class ConfigureCommand : Command<ConfigureSettings>
     {
         if (!string.IsNullOrEmpty(defaultValue))
         {
-            var prompt = new ConfirmationPrompt($"> [red]{defaultValue}[/].\r\n  Pick something else?");
+            var prompt = new ConfirmationPrompt($"[red]{defaultValue}[/].\r\nPick something else?");
             if (!AnsiConsole.Prompt(prompt))
                 return defaultValue;
         }
