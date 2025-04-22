@@ -6,7 +6,7 @@ namespace Bild.Core;
 
 public class Program
 {
-    private const string Cancel = "[red]Cancel[/]";
+    private const string Cancel = "[red]Quit[/]";
 
     private CommandApp MakeApp()
     {
@@ -14,6 +14,7 @@ public class Program
 
         app.Configure(config =>
         {
+            config.AddCommand<ConfigureCommand>(ConfigureCommand.Name);
             config.AddCommand<DuplicatesCommand>(DuplicatesCommand.Name);
             config.AddCommand<RenameCommand>(RenameCommand.Name);
         });
@@ -29,6 +30,7 @@ public class Program
         {
             DuplicatesCommand.Name,
             RenameCommand.Name,
+            ConfigureCommand.Name,
             Cancel
         };
 
@@ -43,7 +45,6 @@ public class Program
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"Tools to organize photos and videos. Pick a command ...")
-                    // .PageSize(16)
                     .MoreChoicesText($"[grey](Navigate with arrow keys.)[/]")
                     .AddChoices(options)
             );
@@ -60,7 +61,7 @@ public class Program
             }
             else
             {
-                app.Run([selected]);
+                app.Run([selected, "--bla", "Test", "--blubb"]);
             }
         }
     }

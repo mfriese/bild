@@ -1,7 +1,5 @@
-﻿using Spectre.Console.Cli;
+﻿namespace Bild.Core.Features.Commands;
 
-namespace Bild.Core.Features.Commands;
-
-public class RenameSettings : CommandSettings
+public class RenameSettings : BaseSettings
 {
 }

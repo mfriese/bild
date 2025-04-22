@@ -73,6 +73,12 @@ public class RenameCommand : Command<RenameSettings>
 
         AnsiConsole.Write(table);
 
+        AnsiConsole.MarkupLine("Images and Videos that have a creation date will be renamed. " +
+            "Files that do not have such a date will not be changed!\r\n");
+
+        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to rename files?")))
+            return CancellationMessage(0);
+
         //var msg = $"Found {files.Count()} files, but only {filesWithExif.Count} have EXIF Creation information! Proceed?";
 
         //if (!AnsiConsole.Prompt(new ConfirmationPrompt(msg)))
