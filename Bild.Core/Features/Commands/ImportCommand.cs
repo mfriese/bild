@@ -35,18 +35,8 @@ public class ImportCommand : Command<ImportSettings>
 
         var files = Finder.FindFiles(sourcePath);
 
-        var progress = AnsiConsole.Progress()
-            .AutoClear(false)
-            .AutoRefresh(true)
-            .HideCompleted(false)
-            .Columns(
-            [
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn(),
-                new PercentageColumn(),
-                new RemainingTimeColumn(),
-                new SpinnerColumn()
-            ]);
+        GetProgressInteractor getProgress = new();
+        var progress = getProgress.Perform();
 
         using var md5 = MD5.Create();
         GetHashInteractor getHash = new();

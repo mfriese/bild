@@ -1,5 +1,7 @@
-﻿using Bild.Core.Features.Importer;
+﻿using Bild.Core.Features.Files;
+using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
+using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -7,7 +9,7 @@ namespace Bild.Core.Features.Commands;
 
 public class RenameCommand : Command<RenameSettings>
 {
-    public static string Name => "Rename Files to Exif Date";
+    public static string Name => "Rename files to Exif Date";
 
     public override int Execute(CommandContext context, RenameSettings settings)
     {
@@ -15,8 +17,8 @@ public class RenameCommand : Command<RenameSettings>
             "can cancel at any point along the way but once files are renamed " +
             "the orignal name is gone! No files will be deleted!\r\n");
 
-        PathSelectorInteractor pathSelector = new();
-        var selectedDir = pathSelector.Perform();
+        ImportPathOrSelectInteractor importPathOrSelect = new();
+        var selectedDir = importPathOrSelect.Perform();
 
         if (string.IsNullOrEmpty(selectedDir))
             return 0;
@@ -32,36 +34,24 @@ public class RenameCommand : Command<RenameSettings>
             .AddColumn("[grey]EXIF Created at[/]")
             .AddColumn("[grey]EXIF File suffix[/]");
 
-        var progress = AnsiConsole.Progress()
-            .AutoClear(false)
-            .AutoRefresh(true)
-            .HideCompleted(false)
-            .Columns(
-            [
-                new TaskDescriptionColumn(),
-                new ProgressBarColumn(),
-                new PercentageColumn(),
-                new RemainingTimeColumn(),
-                new SpinnerColumn()
-            ]);
+        GetProgressInteractor getProgress = new();
+        var exifProgress = getProgress.Perform();
 
         AnsiConsole.MarkupLine("Now getting Meta Data for each file ...");
 
-        progress.Start(ctx =>
+        exifProgress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
-
-            int index = 0;
 
             files.ToList().ForEach(ff =>
             {
                 table.AddRow(
-                    ff.Filename,
+                    Markup.Escape(ff.Filename),
                     ff.ExifFileType?.ToString() ?? "N/A",
                     ff.ExifCreationDate?.ToString("yyyy-MM-dd hh:mm:ss") ?? "N/A",
                     ff.ExifFileNameExtension ?? "N/A");
 
-                task.Value = ++index;
+                task.Increment(1);
             });
         });
 
@@ -73,29 +63,21 @@ public class RenameCommand : Command<RenameSettings>
         if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to rename files?")))
             return 0;
 
-        //var msg = $"Found {files.Count()} files, but only {filesWithExif.Count} have EXIF Creation information! Proceed?";
+        var renameProgress = getProgress.Perform();
 
-        //if (!AnsiConsole.Prompt(new ConfirmationPrompt(msg)))
-        //    return CancellationMessage(0);
+        exifProgress.Start(ctx =>
+        {
+            var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
-        //foreach (var file in filesWithExif)
-        //{
-        //    // TODO name collisions
+            files.Where(ff => ff.IsAccepted).ToList().ForEach(ff =>
+            {
+                ff.RenameToDateTemplate("yyyy-MM-dd_hh-mm-ss");
 
-        //    var newName = file.ExifCreationDate?.ToString("yyyy-MM-dd_hh-mm-ss") + "." + file.ExifFileNameExtension;
+                task.Increment(1);
+            });
+        });
 
-        //    AnsiConsole.MarkupLine($"Renaming {file.Filename} to {newName}");
-
-        //    var newFile = file.Rename(newName);
-
-        //    if (newFile is null)
-        //        AnsiConsole.MarkupLine($"[red]Problem[/] when renaming {file.Filename} to {newName}!");
-        //}
-
-        //AnsiConsole.MarkupLine($"[green]Renamed {filesWithExif.Count} files![/]");
-        AnsiConsole.MarkupLine("Press [green]any key[/] to continue ...");
-        Console.ReadKey();
-
-        return 0;
+        WaitKeyPressInteractor waitKeyPress = new();
+        return waitKeyPress.Perform(0);
     }
 }

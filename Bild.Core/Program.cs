@@ -30,8 +30,8 @@ public class Program
 
         var options = new string[]
         {
-            DuplicatesCommand.Name,
             ImportCommand.Name,
+            DuplicatesCommand.Name,
             RenameCommand.Name,
             ConfigureCommand.Name,
             Cancel

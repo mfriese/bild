@@ -19,18 +19,18 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
             "gone for good! We will only delete a file, if it has the [green]same hash " +
             "value[/] than another file, this means they are identical!\r\n");
 
-        PathSelectorInteractor pathSelector = new();
-        var selectedPath = pathSelector.Perform();
+        ImportPathOrSelectInteractor importPathOrSelect = new();
+        var selectedDir = importPathOrSelect.Perform();
 
-        if (string.IsNullOrEmpty(selectedPath))
+        if (string.IsNullOrEmpty(selectedDir))
             return 0;
 
         GetAllHashesInteractor getAllHashes = new();
-        var hashes = getAllHashes.Perform(selectedPath);
+        var hashes = getAllHashes.Perform(selectedDir);
 
         if (!hashes.Any(hh => 1 < hh.Count()))
         {
-            AnsiConsole.MarkupLine($"[green]There are NO duplicates in {selectedPath}[/]");
+            AnsiConsole.MarkupLine($"[green]There are NO duplicates in {selectedDir}[/]");
 
             return waitKeyPress.Perform(0);
         }
@@ -40,6 +40,7 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
 
         var table = new Table()
             .Border(TableBorder.Rounded)
+            .Expand()
             .BorderColor(Color.Grey)
             .AddColumn("[cyan]Hashcode[/]")
             .AddColumn("[grey]Kept file[/]")

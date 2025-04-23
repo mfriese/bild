@@ -46,7 +46,8 @@ public static class MediaFileExtensions
 
         if (string.IsNullOrEmpty(targetName))
         {
-            AnsiConsole.MarkupLine($"[red]No filename can be created for {file.Filename}![/]");
+            AnsiConsole.MarkupLine($"[red]Cannot rename[/] file [yellow]" +
+                $"{file.Filename}[/]!");
             return null;
         }
 
@@ -58,13 +59,21 @@ public static class MediaFileExtensions
 
         for (int ii = 1; File.Exists(targetFilePath); ++ii)
         {
+            if (Equals(file.AbsolutePath, targetFilePath))
+            {
+                AnsiConsole.MarkupLine($"[red]No need to rename[/] file " +
+                    $"[yellow]{file.Filename}[/]!");
+                return null;
+            }
+
             targetFileName = $"{targetName}_{ii}.{targetExtension}";
             targetFilePath = Path.Combine(targetDir, targetFileName);
         }
 
-        AnsiConsole.MarkupLine($"Moving file [green]{file.Filename}[/] to [green]{targetFilePath}[/]");
+        AnsiConsole.MarkupLine($"[green]Renamed[/] file [yellow]{file.Filename}[/] to " +
+            $"[yellow]{targetFileName}[/]");
 
-        File.Move(file.AbsolutePath, targetFilePath);
+        File.Move(file.AbsolutePath, targetFilePath, false);
 
         return new MediaFile(targetFilePath);
     }
