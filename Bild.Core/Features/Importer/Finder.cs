@@ -4,9 +4,9 @@ namespace Bild.Core.Features.Importer;
 
 public static class Finder
 {
-    public static IEnumerable<Files.File> FindFiles(Dir root)
+    public static IEnumerable<Files.MediaFile> FindFiles(MediaDir root)
         => root.Dirs.Select(FindFiles).SelectMany(ff => ff).Concat(root.Files);
 
-    public static IEnumerable<Files.File> FindFiles(string path)
-        => FindFiles(new Dir(path));
+    public static IEnumerable<Files.MediaFile> FindFiles(string path)
+        => FindFiles(new MediaDir(path));
 }

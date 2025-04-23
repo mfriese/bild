@@ -67,7 +67,7 @@ public class Program
                 LoadBaseSettingsInteractor loadBaseSettings = new();
                 var cfg = loadBaseSettings.Perform();
 
-                app.Run([selected, "-w", cfg.WorkDir, "-p", cfg.PhotosDir]);
+                app.Run([selected, "-p", cfg.PhotosDir]);
             }
         }
     }

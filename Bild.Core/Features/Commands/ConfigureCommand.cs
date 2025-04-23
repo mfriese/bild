@@ -14,16 +14,22 @@ public class ConfigureCommand : Command<ConfigureSettings>
         LoadBaseSettingsInteractor loadBaseSettings = new();
         var baseSettings = loadBaseSettings.Perform();
 
-        AnsiConsole.MarkupLine("Current setting:");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Expand()
+            .BorderColor(Color.Grey)
+            .AddColumn("[cyan]Variable[/]")
+            .AddColumn("[grey]Current Value[/]")
+            .AddRow([nameof(baseSettings.PhotosDir), baseSettings.PhotosDir]);
+
+        AnsiConsole.Write(table);
+
         AnsiConsole.MarkupLine(baseSettings.ToString());
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Change settings?")))
             return 0;
 
         AnsiConsole.MarkupLine("Where is your photos library?");
         baseSettings.PhotosDir = PickDirectory(baseSettings.PhotosDir);
-
-        AnsiConsole.MarkupLine("Where should we look for new photos?");
-        baseSettings.WorkDir = PickDirectory(baseSettings.WorkDir);
 
         SaveBaseSettingsInteractor saveBaseSettings = new();
         saveBaseSettings.Perform(baseSettings);
@@ -35,20 +41,14 @@ public class ConfigureCommand : Command<ConfigureSettings>
     {
         if (!string.IsNullOrEmpty(defaultValue))
         {
-            var prompt = new ConfirmationPrompt($"[red]{defaultValue}[/].\r\nPick something else?");
-            if (!AnsiConsole.Prompt(prompt))
+            var prompt = new ConfirmationPrompt($"Current selection: [red]" +
+                $"{defaultValue}[/].\r\nKeep this value?");
+
+            if (AnsiConsole.Prompt(prompt))
                 return defaultValue;
         }
 
-        DriveSelectorInteractor driveSelector = new();
-        var selectedDrive = driveSelector.Perform();
-
-        if (string.IsNullOrEmpty(selectedDrive))
-            return string.Empty;
-
-        DirectorySelectorInteractor directorySelector = new();
-        var selectedDir = directorySelector.Perform(selectedDrive);
-
-        return selectedDir;
+        PathSelectorInteractor pathSelector = new();
+        return pathSelector.Perform();
     }
 }

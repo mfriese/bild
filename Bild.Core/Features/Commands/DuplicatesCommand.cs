@@ -1,5 +1,6 @@
 ﻿using Bild.Core.Interactors.Directories;
 using Bild.Core.Interactors.Hashing;
+using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -11,36 +12,31 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
 
     public override int Execute(CommandContext context, DuplicatesSettings settings)
     {
+        WaitKeyPressInteractor waitKeyPress = new();
+
         AnsiConsole.MarkupLine("You have chosen to [red]delete[/] duplicate files. You " +
             "can cancel at any point along the way but once files are deleted they are " +
             "gone for good! We will only delete a file, if it has the [green]same hash " +
             "value[/] than another file, this means they are identical!\r\n");
 
-        DriveSelectorInteractor driveSelector = new();
-        var selectedDrive = driveSelector.Perform();
+        PathSelectorInteractor pathSelector = new();
+        var selectedPath = pathSelector.Perform();
 
-        if (string.IsNullOrEmpty(selectedDrive))
-            return CancellationMessage(0);
-
-        DirectorySelectorInteractor directorySelector = new();
-        var selectedDir = directorySelector.Perform(selectedDrive);
-
-        if (string.IsNullOrEmpty(selectedDir))
-            return CancellationMessage(0);
+        if (string.IsNullOrEmpty(selectedPath))
+            return 0;
 
         GetAllHashesInteractor getAllHashes = new();
-        var hashes = getAllHashes.Perform(selectedDir);
+        var hashes = getAllHashes.Perform(selectedPath);
 
         if (!hashes.Any(hh => 1 < hh.Count()))
         {
-            AnsiConsole.MarkupLine($"[green]There are NO duplicates in {selectedDir}[/]");
-            AnsiConsole.MarkupLine("Press [green]any key[/] to continue ...");
-            Console.ReadKey(true);
-            return 0;
+            AnsiConsole.MarkupLine($"[green]There are NO duplicates in {selectedPath}[/]");
+
+            return waitKeyPress.Perform(0);
         }
 
         if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to delete duplicated files?")))
-            return CancellationMessage(0);
+            return 0;
 
         var table = new Table()
             .Border(TableBorder.Rounded)
@@ -79,19 +75,9 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
                 }
             });
 
-        AnsiConsole.MarkupLine("Press [green]any key[/] to continue ...");
-        Console.ReadKey(true);
-
-        return CancellationMessage(0);
+        return waitKeyPress.Perform(0);
     }
 
     private string PickShortest(IEnumerable<string> names)
         => names.OrderBy(tt => tt.Length).FirstOrDefault();
-
-    private int CancellationMessage(int returnValue)
-    {
-        AnsiConsole.MarkupLine("[red]Operation cancelled![/]");
-
-        return returnValue;
-    }
 }

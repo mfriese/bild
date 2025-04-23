@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 
 namespace Bild.Core.Interactors.Hashing;
+
 public class GetAllHashesInteractor
 {
     public List<IGrouping<string, string>> Perform(string rootPath)

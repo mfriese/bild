@@ -4,8 +4,12 @@ using MetadataExtractor.Util;
 
 namespace Bild.Core.Features.Files;
 
-public class File(string path)
+public class MediaFile(string path)
 {
+    private IReadOnlyList<MetadataExtractor.Directory> exif;
+    private IReadOnlyList<MetadataExtractor.Directory> Exif
+        => exif ??= ImageMetadataReader.ReadMetadata(AbsolutePath);
+
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
     public string Filename => Path.GetFileName(AbsolutePath);
@@ -17,13 +21,16 @@ public class File(string path)
     private DateTime? exifCreationDate;
     public DateTime? ExifCreationDate => exifCreationDate ??= GetExifCreationDate();
 
-    public string? exifFileNameExtension;
-    public string? ExifFileNameExtension => exifFileNameExtension ??= GetExifFileNameExtension();
+    public string exifFileNameExtension;
+    public string ExifFileNameExtension => exifFileNameExtension ??= GetExifFileNameExtension();
 
     public DateTime? fileCreationDate;
     public DateTime? FileCreationDate => fileCreationDate ??= GetFileCreationDate();
 
-    public Dir Dir => new(Path.GetDirectoryName(AbsolutePath));
+    public MediaDir Dir => new(Path.GetDirectoryName(AbsolutePath));
+
+    public bool IsAccepted
+        => AcceptedTypes.Contains(GetExifFileType() ?? FileType.Unknown);
 
     private FileType? GetExifFileType()
     {
@@ -36,16 +43,14 @@ public class File(string path)
     {
         try
         {
-            var exif = ImageMetadataReader.ReadMetadata(AbsolutePath);
-
             switch (ExifFileType)
             {
                 case FileType.Jpeg:
                     GetCreationDateJpgInteractor getJpgCreationDate = new();
-                    return getJpgCreationDate.Perform(exif);
+                    return getJpgCreationDate.Perform(Exif);
                 case FileType.Mp4:
                     GetCreationDateMp4Interactor getMp4CreationDate = new();
-                    return getMp4CreationDate.Perform(exif);
+                    return getMp4CreationDate.Perform(Exif);
                 default:
                     return null;
             }
@@ -60,10 +65,8 @@ public class File(string path)
     {
         try
         {
-            var exif = ImageMetadataReader.ReadMetadata(AbsolutePath);
-
             GetFileNameExtensionInteractor getFileNameExtension = new();
-            return getFileNameExtension.Perform(exif);
+            return getFileNameExtension.Perform(Exif);
         }
         catch (Exception)
         { }
@@ -84,4 +87,10 @@ public class File(string path)
 
         return creation;
     }
+
+    public static FileType[] AcceptedTypes =
+    [
+        FileType.Jpeg,
+        FileType.Mp4
+    ];
 }

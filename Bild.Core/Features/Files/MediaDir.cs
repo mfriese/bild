@@ -1,15 +1,15 @@
 ﻿namespace Bild.Core.Features.Files;
 
-public class Dir(string path)
+public class MediaDir(string path)
 {
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
-    public IEnumerable<Dir> Dirs => FindDirectories();
-    public IEnumerable<File> Files => FindFiles();
+    public IEnumerable<MediaDir> Dirs => FindDirectories();
+    public IEnumerable<MediaFile> Files => FindFiles();
 
-    private IEnumerable<Dir> FindDirectories()
+    private IEnumerable<MediaDir> FindDirectories()
     {
-        IEnumerable<Dir> findings;
+        IEnumerable<MediaDir> findings;
 
         if (!Directory.Exists(AbsolutePath))
         {
@@ -21,7 +21,7 @@ public class Dir(string path)
             {
                 findings = from dd in Directory.EnumerateDirectories(AbsolutePath)
                            where dd != "." && dd != ".."
-                           select new Dir(dd);
+                           select new MediaDir(dd);
             }
             catch (UnauthorizedAccessException)
             {
@@ -32,9 +32,9 @@ public class Dir(string path)
         return findings;
     }
 
-    private IEnumerable<File> FindFiles()
+    private IEnumerable<MediaFile> FindFiles()
     {
-        IEnumerable<File> findings;
+        IEnumerable<MediaFile> findings;
 
         if (!Directory.Exists(AbsolutePath))
         {
@@ -46,7 +46,7 @@ public class Dir(string path)
             try
             {
                 findings = from ff in Directory.EnumerateFiles(AbsolutePath)
-                           select new File(ff);
+                           select new MediaFile(ff);
             }
             catch (UnauthorizedAccessException)
             {

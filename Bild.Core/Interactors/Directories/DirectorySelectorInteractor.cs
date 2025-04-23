@@ -1,3 +1,4 @@
+using Bild.Core.Interactors.UI;
 using Spectre.Console;
 
 namespace Bild.Core.Interactors.Directories;
@@ -16,10 +17,23 @@ public class DirectorySelectorInteractor
             return string.Empty;
         }
 
-        var directories = Directory.
-            GetDirectories(rootPath).
-            Select(Path.GetFileName).
-            ToList();
+        List<string> directories = [];
+
+        try
+        {
+            directories = Directory.
+                GetDirectories(rootPath).
+                Select(Path.GetFileName).
+                ToList();
+        }
+        catch (Exception exp)
+        {
+            AnsiConsole.MarkupLine($"[red]Error while reading directory![/]");
+            AnsiConsole.WriteLine($"\r\n-> {exp.Message}\r\n");
+
+            WaitKeyPressInteractor waitKeyPress = new();
+            return waitKeyPress.Perform(string.Empty);
+        }
 
         directories.Add(Accept);
         directories.Add(Cancel);

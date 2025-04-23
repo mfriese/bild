@@ -12,20 +12,14 @@ public class RenameCommand : Command<RenameSettings>
     public override int Execute(CommandContext context, RenameSettings settings)
     {
         AnsiConsole.MarkupLine("You have chosen to [red]rename[/] files. You " +
-            "can cancel at any point along the way but once files are renamed the orignal " +
-            "name is gone! No files will be deleted!\r\n");
+            "can cancel at any point along the way but once files are renamed " +
+            "the orignal name is gone! No files will be deleted!\r\n");
 
-        DriveSelectorInteractor driveSelector = new();
-        var selectedDrive = driveSelector.Perform();
-
-        if (string.IsNullOrEmpty(selectedDrive))
-            return CancellationMessage(0);
-
-        DirectorySelectorInteractor directorySelector = new();
-        var selectedDir = directorySelector.Perform(selectedDrive);
+        PathSelectorInteractor pathSelector = new();
+        var selectedDir = pathSelector.Perform();
 
         if (string.IsNullOrEmpty(selectedDir))
-            return CancellationMessage(0);
+            return 0;
 
         var files = Finder.FindFiles(selectedDir);
 
@@ -73,11 +67,11 @@ public class RenameCommand : Command<RenameSettings>
 
         AnsiConsole.Write(table);
 
-        AnsiConsole.MarkupLine("Images and Videos that have a creation date will be renamed. " +
-            "Files that do not have such a date will not be changed!\r\n");
+        AnsiConsole.MarkupLine("Images and Videos that have a creation date will " +
+            "be renamed. Files that do not have such a date will not be changed!\r\n");
 
         if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to rename files?")))
-            return CancellationMessage(0);
+            return 0;
 
         //var msg = $"Found {files.Count()} files, but only {filesWithExif.Count} have EXIF Creation information! Proceed?";
 
@@ -103,12 +97,5 @@ public class RenameCommand : Command<RenameSettings>
         Console.ReadKey();
 
         return 0;
-    }
-
-    private int CancellationMessage(int returnValue)
-    {
-        AnsiConsole.MarkupLine("[red]Operation cancelled![/]");
-
-        return returnValue;
     }
 }
