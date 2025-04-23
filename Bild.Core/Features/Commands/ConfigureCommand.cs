@@ -7,7 +7,7 @@ namespace Bild.Core.Features.Commands;
 
 public class ConfigureCommand : Command<ConfigureSettings>
 {
-    public static string Name => "Configure App Defaults";
+    public static string Name => "[yellow]Configure App Defaults[/]";
 
     public override int Execute(CommandContext context, ConfigureSettings settings)
     {
@@ -24,11 +24,10 @@ public class ConfigureCommand : Command<ConfigureSettings>
 
         AnsiConsole.Write(table);
 
-        AnsiConsole.MarkupLine(baseSettings.ToString());
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Change settings?")))
             return 0;
 
-        AnsiConsole.MarkupLine("Where is your photos library?");
+        AnsiConsole.MarkupLine("\r\nWhere is your photos library?");
         baseSettings.PhotosDir = PickDirectory(baseSettings.PhotosDir);
 
         SaveBaseSettingsInteractor saveBaseSettings = new();
@@ -42,7 +41,7 @@ public class ConfigureCommand : Command<ConfigureSettings>
         if (!string.IsNullOrEmpty(defaultValue))
         {
             var prompt = new ConfirmationPrompt($"Current selection: [red]" +
-                $"{defaultValue}[/].\r\nKeep this value?");
+                $"{defaultValue}[/]. Keep this value?");
 
             if (AnsiConsole.Prompt(prompt))
                 return defaultValue;

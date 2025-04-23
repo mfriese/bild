@@ -24,6 +24,9 @@ public class ImportCommand : Command<ImportSettings>
         PathSelectorInteractor pathSelector = new();
         var sourcePath = pathSelector.Perform();
 
+        if (string.IsNullOrEmpty(sourcePath))
+            return 0;
+
         GetImportPathInteractor getImportPath = new();
         var targetPath = getImportPath.Perform(settings);
 
