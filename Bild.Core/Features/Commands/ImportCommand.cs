@@ -1,9 +1,12 @@
 ﻿using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
+using Bild.Core.Interactors.Hashing;
+using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using System.Security.Cryptography;
 
 namespace Bild.Core.Features.Commands;
 
@@ -13,7 +16,7 @@ public class ImportCommand : Command<ImportSettings>
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE all " +
+        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE ALL " +
             "files from source to target folder. They will be remove from the " +
             "source folder and added to the target folder. Please select a " +
             "[red]source folder[/] first!\r\n");
@@ -21,20 +24,44 @@ public class ImportCommand : Command<ImportSettings>
         PathSelectorInteractor pathSelector = new();
         var sourcePath = pathSelector.Perform();
 
+        GetImportPathInteractor getImportPath = new();
+        var targetPath = getImportPath.Perform(settings);
+
         var pp = new ConfirmationPrompt($"Import media from [red]{sourcePath}[/] " +
-            $"to target folder [red]{settings.PhotosDir}[/]");
+            $"to target folder [red]{targetPath}[/]");
 
         if (!AnsiConsole.Prompt(pp))
             return 1;
 
         var files = Finder.FindFiles(sourcePath);
 
-        foreach (var file in files.Where(ff => ff.IsAccepted))
-        {
-            file.Move(settings.PhotosDir, "yyyy-MM-dd_hh-mm-ss");
+        var progress = AnsiConsole.Progress()
+            .AutoClear(false)
+            .AutoRefresh(true)
+            .HideCompleted(false)
+            .Columns(
+            [
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new PercentageColumn(),
+                new RemainingTimeColumn(),
+                new SpinnerColumn()
+            ]);
 
-            AnsiConsole.MarkupLine($"[green]File {file.Filename} moved to {settings.PhotosDir}[/]");
-        }
+        using var md5 = MD5.Create();
+        GetHashInteractor getHash = new();
+
+        progress.Start(ctx =>
+        {
+            var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
+
+            foreach (var file in files)
+            {
+                file.Move(targetPath);
+
+                task.Increment(1);
+            }
+        });
 
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);

@@ -12,7 +12,7 @@ public class MediaFile(string path)
 
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
-    public string Filename => Path.GetFileName(AbsolutePath);
+    public string Filename => Path.GetFileNameWithoutExtension(AbsolutePath);
     public string Extension => Path.GetExtension(AbsolutePath);
 
     public FileType? exifFileType;
