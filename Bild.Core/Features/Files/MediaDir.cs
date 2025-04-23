@@ -19,9 +19,10 @@ public class MediaDir(string path)
         {
             try
             {
-                findings = from dd in Directory.EnumerateDirectories(AbsolutePath)
-                           where dd != "." && dd != ".."
-                           select new MediaDir(dd);
+                findings = Directory.
+                    EnumerateDirectories(AbsolutePath).
+                    Where(d => d != "." && d != "..").
+                    Select(d => new MediaDir(d));
             }
             catch (UnauthorizedAccessException)
             {
@@ -45,8 +46,9 @@ public class MediaDir(string path)
         {
             try
             {
-                findings = from ff in Directory.EnumerateFiles(AbsolutePath)
-                           select new MediaFile(ff);
+                findings = Directory.
+                    EnumerateFiles(AbsolutePath).
+                    Select(f => new MediaFile(f));
             }
             catch (UnauthorizedAccessException)
             {

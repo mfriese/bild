@@ -25,7 +25,7 @@ public class RenameCommand : Command<RenameSettings>
 
         var files = Finder.FindFiles(selectedDir);
 
-        var table = new Table()
+        var previewTable = new Table()
             .Border(TableBorder.Ascii)
             .BorderColor(Color.White)
             .Expand()
@@ -45,7 +45,7 @@ public class RenameCommand : Command<RenameSettings>
 
             files.ToList().ForEach(ff =>
             {
-                table.AddRow(
+                previewTable.AddRow(
                     Markup.Escape(ff.Filename),
                     ff.ExifFileType?.ToString() ?? "N/A",
                     ff.ExifCreationDate?.ToString("yyyy-MM-dd hh:mm:ss") ?? "N/A",
@@ -55,7 +55,7 @@ public class RenameCommand : Command<RenameSettings>
             });
         });
 
-        AnsiConsole.Write(table);
+        AnsiConsole.Write(previewTable);
 
         AnsiConsole.MarkupLine("Images and Videos that have a creation date will " +
             "be renamed. Files that do not have such a date will not be changed!\r\n");
@@ -65,13 +65,21 @@ public class RenameCommand : Command<RenameSettings>
 
         var renameProgress = getProgress.Perform();
 
-        exifProgress.Start(ctx =>
+        renameProgress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
-            files.Where(ff => ff.IsAccepted).ToList().ForEach(ff =>
+            files.ToList().ForEach(ff =>
             {
-                ff.RenameToDateTemplate("yyyy-MM-dd_hh-mm-ss");
+                if (ff.IsAccepted)
+                {
+                    var newFile = ff.RenameToDateTemplate("yyyy-MM-dd_hh-mm-ss");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine($"[green]Skipping[/] file [yellow]" +
+                        $"{ff.Filename}[/]!");
+                }
 
                 task.Increment(1);
             });
