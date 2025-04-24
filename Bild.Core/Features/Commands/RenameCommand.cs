@@ -65,25 +65,44 @@ public class RenameCommand : Command<RenameSettings>
 
         var renameProgress = getProgress.Perform();
 
+        var renameTable = new Table()
+            .Border(TableBorder.Ascii)
+            .BorderColor(Color.White)
+            .Expand()
+            .AddColumn("[cyan]Old filename[/]")
+            .AddColumn("[cyan]Extension[/]")
+            .AddColumn("[cyan]New filename[/]");
+
         renameProgress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
             files.ToList().ForEach(ff =>
             {
+                var row = new string[]
+                {
+                    Markup.Escape(ff.Filename),
+                    Markup.Escape(ff.Extension),
+                    "N/A (ignored)"
+                };
+
                 if (ff.IsAccepted)
                 {
                     var newFile = ff.RenameToDateTemplate("yyyy-MM-dd_hh-mm-ss");
+
+                    row[2] = newFile?.Filename ?? "N/A";
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[green]Skipping[/] file [yellow]" +
-                        $"{ff.Filename}[/]!");
                 }
 
                 task.Increment(1);
+
+                renameTable.AddRow(row);
             });
         });
+
+        AnsiConsole.Write(renameTable);
 
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);

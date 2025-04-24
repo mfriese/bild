@@ -37,19 +37,12 @@ public static class MediaFileExtensions
     public static MediaFile RenameToDateTemplate(this MediaFile file, string targetTemplate)
     {
         if (!File.Exists(file.AbsolutePath))
-        {
-            AnsiConsole.MarkupLine($"[red]Source file {file.Filename} does not exist![/]");
             return null;
-        }
 
         var targetName = file.ExifCreationDate?.ToString(targetTemplate) ?? string.Empty;
 
         if (string.IsNullOrEmpty(targetName))
-        {
-            AnsiConsole.MarkupLine($"[red]Cannot rename[/] file [yellow]" +
-                $"{file.Filename}[/]!");
             return null;
-        }
 
         var targetExtension = file.ExifFileNameExtension ?? file.Extension;
         var targetDir = file.Dir.AbsolutePath;
@@ -60,11 +53,7 @@ public static class MediaFileExtensions
         for (int ii = 1; File.Exists(targetFilePath); ++ii)
         {
             if (Equals(file.AbsolutePath, targetFilePath))
-            {
-                AnsiConsole.MarkupLine($"[red]No need to rename[/] file " +
-                    $"[yellow]{file.Filename}[/]!");
                 return null;
-            }
 
             targetFileName = $"{targetName}_{ii}.{targetExtension}";
             targetFilePath = Path.Combine(targetDir, targetFileName);
