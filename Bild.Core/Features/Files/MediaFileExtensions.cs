@@ -44,6 +44,8 @@ public static class MediaFileExtensions
         if (string.IsNullOrEmpty(targetName))
             return null;
 
+        targetName = "IMG_" + targetName;
+
         var targetExtension = file.ExifFileNameExtension ?? file.Extension;
         var targetDir = file.Dir.AbsolutePath;
 

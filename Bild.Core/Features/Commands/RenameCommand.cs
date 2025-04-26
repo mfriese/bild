@@ -88,7 +88,7 @@ public class RenameCommand : Command<RenameSettings>
 
                 if (ff.IsAccepted)
                 {
-                    var newFile = ff.RenameToDateTemplate("yyyy-MM-dd_hh-mm-ss");
+                    var newFile = ff.RenameToDateTemplate("yyyyMMdd_hhmmss");
 
                     row[2] = newFile?.Filename ?? "N/A";
                 }

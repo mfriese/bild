@@ -12,12 +12,4 @@
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.77" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EditorConfigFiles Remove="Q:\bild\Bild.Core\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Q:\bild\Bild.Core\.editorconfig" />
-  </ItemGroup>
-
 </Project>

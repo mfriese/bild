@@ -80,7 +80,7 @@ public class MediaFile(string path)
 
         try
         {
-            creation = System.IO.File.GetCreationTime(AbsolutePath);
+            creation = File.GetCreationTime(AbsolutePath);
         }
         catch (Exception)
         { }
@@ -88,9 +88,10 @@ public class MediaFile(string path)
         return creation;
     }
 
-    public static FileType[] AcceptedTypes =
+    public static FileType[] AcceptedTypes =>
     [
         FileType.Jpeg,
-        FileType.Mp4
+        FileType.Mp4,
+        FileType.QuickTime
     ];
 }

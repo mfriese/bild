@@ -41,15 +41,18 @@ public class ImportCommand : Command<ImportSettings>
         GetProgressInteractor getProgress = new();
         var progress = getProgress.Perform();
 
-        using var md5 = MD5.Create();
-        GetHashInteractor getHash = new();
-
         progress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
             foreach (var file in files)
             {
+                if (string.IsNullOrEmpty(file.Filename))
+                    continue;
+
+                if (!file.IsAccepted)
+                    continue;
+
                 file.Move(targetPath);
 
                 task.Increment(1);
