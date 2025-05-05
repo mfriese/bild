@@ -16,10 +16,8 @@ public class ImportCommand : Command<ImportSettings>
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE ALL " +
-            "files from source to target folder. They will be remove from the " +
-            "source folder and added to the target folder. Please select a " +
-            "[red]source folder[/] first!\r\n");
+        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " + 
+            "to target folder. Please select a [red]source folder[/] first!\r\n");
 
         PathSelectorInteractor pathSelector = new();
         var sourcePath = pathSelector.Perform();
@@ -28,10 +26,10 @@ public class ImportCommand : Command<ImportSettings>
             return 0;
 
         GetImportPathInteractor getImportPath = new();
-        var targetPath = getImportPath.Perform(settings);
+        var targetPath = new MediaDir(getImportPath.Perform(settings));
 
-        var pp = new ConfirmationPrompt($"Import media from [red]{sourcePath}[/] " +
-            $"to target folder [red]{targetPath}[/]");
+        var pp = new ConfirmationPrompt($"Recursively import media from [red]{sourcePath}[/] " +
+            $"to target folder [red]{targetPath}[/]. Files will be copied. Continue?");
 
         if (!AnsiConsole.Prompt(pp))
             return 1;
@@ -47,15 +45,16 @@ public class ImportCommand : Command<ImportSettings>
 
             foreach (var file in files)
             {
-                if (string.IsNullOrEmpty(file.Filename))
-                    continue;
-
-                if (!file.IsAccepted)
-                    continue;
-
-                file.Move(targetPath);
-
                 task.Increment(1);
+                
+                if (!file.IsAccepted)
+                {
+                    AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] is not an accepted filetype.");
+                    
+                    continue;
+                }
+
+                file.CopyTo(targetPath);
             }
         });
 

@@ -1,10 +1,11 @@
-﻿using Spectre.Console;
+﻿using Bild.Core.Interactors.Files;
+using Spectre.Console;
 
 namespace Bild.Core.Features.Files;
 
 public static class MediaFileExtensions
 {
-    public static MediaFile Move(this MediaFile file, string targetDir)
+    public static MediaFile CopyTo(this MediaFile file, MediaDir targetDir)
     {
         if (!File.Exists(file.AbsolutePath))
         {
@@ -12,24 +13,20 @@ public static class MediaFileExtensions
             return null;
         }
 
-        if (!Directory.Exists(targetDir))
+        var targetPath = targetDir.AbsolutePath;
+        
+        if (!Directory.Exists(targetPath))
         {
             AnsiConsole.MarkupLine($"[red]Target directory {targetDir} does not exist![/]");
             return null;
         }
 
+        ResolveNameClashInteractor resolveNameClash = new();
         var targetExtension = file.ExifFileNameExtension ?? file.Extension;
+        var targetFilename = resolveNameClash.Perform(targetPath, file.Filename, targetExtension);
+        var targetFilePath = Path.Combine(targetPath, $"{targetFilename}.{targetExtension}"); 
 
-        var targetFileName = $"{file.Filename}.{targetExtension}";
-        var targetFilePath = Path.Combine(targetDir, targetFileName);
-
-        for (int ii = 1; File.Exists(targetFilePath); ++ii)
-        {
-            targetFileName = $"{file.Filename}_{ii}.{targetExtension}";
-            targetFilePath = Path.Combine(targetDir, targetFileName);
-        }
-
-        File.Move(file.AbsolutePath, targetFilePath);
+        File.Copy(file.AbsolutePath, targetFilePath, false);
 
         return new MediaFile(targetFilePath);
     }
