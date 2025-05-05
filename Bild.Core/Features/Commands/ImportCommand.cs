@@ -26,7 +26,7 @@ public class ImportCommand : Command<ImportSettings>
             return 0;
 
         GetImportPathInteractor getImportPath = new();
-        var targetPath = new MediaDir(getImportPath.Perform(settings));
+        var targetPath = getImportPath.Perform(settings);
 
         var pp = new ConfirmationPrompt($"Recursively import media from [red]{sourcePath}[/] " +
             $"to target folder [red]{targetPath}[/]. Files will be copied. Continue?");

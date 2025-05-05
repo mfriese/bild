@@ -1,11 +1,12 @@
-﻿using Bild.Core.Interactors.Settings;
+﻿using Bild.Core.Features.Files;
+using Bild.Core.Interactors.Settings;
 using Spectre.Console;
 
 namespace Bild.Core.Interactors.Directories;
 
 public class ImportPathOrSelectInteractor
 {
-    public string Perform()
+    public MediaDir Perform()
     {
         GetImportPathInteractor getImportPath = new();
         var selectedPath = getImportPath.Perform();
@@ -14,7 +15,7 @@ public class ImportPathOrSelectInteractor
             $"import folder [red]{selectedPath}[/]?")))
         {
             PathSelectorInteractor pathSelector = new();
-            selectedPath = pathSelector.Perform();
+            selectedPath = new MediaDir(pathSelector.Perform());
         }
 
         return selectedPath;

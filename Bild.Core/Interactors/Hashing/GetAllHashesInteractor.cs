@@ -32,7 +32,7 @@ public class GetAllHashesInteractor
             ]);
 
         using var md5 = MD5.Create();
-        GetHashInteractor getHash = new();
+        GetMD5HashInteractor getMd5Hash = new();
 
         AnsiConsole.MarkupLine($"Calculating hashes in: '{rootPath}'");
 
@@ -44,7 +44,7 @@ public class GetAllHashesInteractor
             {
                 try
                 {
-                    string hash = getHash.Perform(md5, file);
+                    string hash = getMd5Hash.Perform(md5, file);
                     hashes.Add(new Tuple<string, string>(hash, file));
                     task.Value = hashes.Count;
                 }

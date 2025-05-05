@@ -22,11 +22,11 @@ public class DuplicatesCommand : Command<DuplicatesSettings>
         ImportPathOrSelectInteractor importPathOrSelect = new();
         var selectedDir = importPathOrSelect.Perform();
 
-        if (string.IsNullOrEmpty(selectedDir))
+        if (string.IsNullOrEmpty(selectedDir?.AbsolutePath))
             return 0;
 
         GetAllHashesInteractor getAllHashes = new();
-        var hashes = getAllHashes.Perform(selectedDir);
+        var hashes = getAllHashes.Perform(selectedDir?.AbsolutePath);
 
         if (!hashes.Any(hh => 1 < hh.Count()))
         {
