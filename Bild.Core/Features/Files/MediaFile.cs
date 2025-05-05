@@ -49,9 +49,13 @@ public class MediaFile(string path)
                     GetCreationDateJpgInteractor getJpgCreationDate = new();
                     return getJpgCreationDate.Perform(Exif);
                 case FileType.Mp4:
+                case FileType.QuickTime:
                     GetCreationDateMp4Interactor getMp4CreationDate = new();
                     return getMp4CreationDate.Perform(Exif);
                 default:
+                    Console.WriteLine("Cannot identify");
+                    foreach(var ee in Exif)
+                        Console.WriteLine(ee);
                     return null;
             }
         }
