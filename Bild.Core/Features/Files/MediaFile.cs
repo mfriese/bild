@@ -54,8 +54,6 @@ public class MediaFile(string path)
                     return getMp4CreationDate.Perform(Exif);
                 default:
                     Console.WriteLine("Cannot identify");
-                    foreach(var ee in Exif)
-                        Console.WriteLine(ee);
                     return null;
             }
         }
@@ -98,4 +96,7 @@ public class MediaFile(string path)
         FileType.Mp4,
         FileType.QuickTime
     ];
+
+    public override string ToString()
+        => AbsolutePath;
 }

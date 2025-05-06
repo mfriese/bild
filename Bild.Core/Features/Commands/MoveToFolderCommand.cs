@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
+using Bild.Core.Interactors.Files;
 using Bild.Core.Interactors.Hashing;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
@@ -11,6 +12,8 @@ namespace Bild.Core.Features.Commands;
 
 public class MoveToFolderCommand : Command<MoveToFolderSettings>
 {
+    public static string Name => "Move from import folder to correct subfolder";
+    
     public override int Execute(CommandContext context, MoveToFolderSettings settings)
     {
         GetImportPathInteractor getImportPath = new();
@@ -47,24 +50,30 @@ public class MoveToFolderCommand : Command<MoveToFolderSettings>
             
             var targetRootDir = targetPath?.AbsolutePath ?? string.Empty;
             var targetYearDir = Path.Combine(targetRootDir, year);
-            var targetMonthDir = Path.Combine(targetYearDir, month);;
+            var targetDir = Path.Combine(targetYearDir, month);;
             
             if (!Directory.Exists(targetYearDir))
                 Directory.CreateDirectory(targetYearDir);
             
-            if (!Directory.Exists(targetMonthDir))
-                Directory.CreateDirectory(targetMonthDir);
+            if (!Directory.Exists(targetDir))
+                Directory.CreateDirectory(targetDir);
             
-            var hashSuffix = getB36Hash.Perform(md5, file.AbsolutePath);
+            // var hashSuffix = getB36Hash.Perform(md5, file.AbsolutePath);
+
+            var filename = "img_" + creationDate?.ToString("yyyyMMdd_hhmmss");
+            var extension = file.exifFileNameExtension ?? file.Extension;
+
+            AnsiConsole.MarkupLine($"Moving [red]{file.AbsolutePath}[/] to [red]{targetDir}[/].");
             
-            
-            
+            file.MoveTo(new MediaDir(targetDir));
+
             // GetShortHash(file);
             // GetFilename(file, shortHash);
             // GetTargetPath();
             // MoveToPath(file, targetPath);
         }
 
-        return 0;
+        WaitKeyPressInteractor waitKeyPress = new();
+        return waitKeyPress.Perform(0);
     }
 }

@@ -58,4 +58,7 @@ public class MediaDir(string path)
 
         return findings;
     }
+
+    public override string ToString()
+        => AbsolutePath;
 }

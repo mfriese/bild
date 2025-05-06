@@ -16,6 +16,7 @@ public class Program
         app.Configure(config =>
         {
             config.AddCommand<ConfigureCommand>(ConfigureCommand.Name);
+            config.AddCommand<MoveToFolderCommand>(MoveToFolderCommand.Name);
             config.AddCommand<ImportCommand>(ImportCommand.Name);
             config.AddCommand<DuplicatesCommand>(DuplicatesCommand.Name);
             config.AddCommand<RenameCommand>(RenameCommand.Name);
@@ -31,6 +32,7 @@ public class Program
         var options = new string[]
         {
             ImportCommand.Name,
+            MoveToFolderCommand.Name,
             DuplicatesCommand.Name,
             RenameCommand.Name,
             ConfigureCommand.Name,

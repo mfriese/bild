@@ -16,7 +16,7 @@ public class ImportCommand : Command<ImportSettings>
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " + 
+        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE all files from source " + 
             "to target folder. Please select a [red]source folder[/] first!\r\n");
 
         PathSelectorInteractor pathSelector = new();
