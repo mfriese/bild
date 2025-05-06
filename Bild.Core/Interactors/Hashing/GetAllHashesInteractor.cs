@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using System.Security.Cryptography;
+using Bild.Core.Features.Importer;
 
 namespace Bild.Core.Interactors.Hashing;
 
@@ -16,7 +17,8 @@ public class GetAllHashesInteractor
             return hashes.GroupBy(hh => hh.Item1, hh => hh.Item2).ToList();
         }
 
-        var files = Directory.GetFiles(rootPath, "*", SearchOption.AllDirectories);
+        var files = Finder.FindFiles(rootPath).Select(ff => ff.AbsolutePath).ToArray();
+        //var files = Directory.GetFiles(rootPath, "*", SearchOption.AllDirectories);
 
         var progress = AnsiConsole.Progress()
             .AutoClear(false)
