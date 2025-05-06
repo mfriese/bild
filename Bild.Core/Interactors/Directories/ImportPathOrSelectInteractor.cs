@@ -8,14 +8,14 @@ public class ImportPathOrSelectInteractor
 {
     public MediaDir Perform()
     {
-        GetImportPathInteractor getImportPath = new();
-        var selectedPath = getImportPath.Perform();
+        GetLibraryPathInteractor getLibraryPath = new();
+        var selectedPath = getLibraryPath.Perform();
 
-        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Use you photo libraries " +
-            $"import folder [red]{selectedPath}[/]?")))
+        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Use you photo library " +
+            $"folder [red]{selectedPath}[/]?")))
         {
             PathSelectorInteractor pathSelector = new();
-            selectedPath = new MediaDir(pathSelector.Perform());
+            selectedPath = new MediaDir(pathSelector.Perform(selectedPath.AbsolutePath));
         }
 
         return selectedPath;

@@ -2,16 +2,19 @@
 
 public class PathSelectorInteractor
 {
-    public string Perform()
+    public string Perform(string defaultDir = "")
     {
-        DriveSelectorInteractor driveSelector = new();
-        var selectedDrive = driveSelector.Perform();
+        if (string.IsNullOrEmpty(defaultDir))
+        {
+            DriveSelectorInteractor driveSelector = new();
+            defaultDir = driveSelector.Perform();
 
-        if (string.IsNullOrEmpty(selectedDrive))
-            return string.Empty;
+            if (string.IsNullOrEmpty(defaultDir))
+                return string.Empty;
+        }
 
         DirectorySelectorInteractor directorySelector = new();
-        var selectedDir = directorySelector.Perform(selectedDrive);
+        var selectedDir = directorySelector.Perform(defaultDir);
 
         return selectedDir;
     }
