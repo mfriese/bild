@@ -25,19 +25,18 @@ public class RenameCommand : Command<RenameSettings>
 
         var files = Finder.FindFiles(selectedDir);
 
+        AnsiConsole.MarkupLine("Now getting Meta Data for each file ...");
+        
         var previewTable = new Table()
             .Border(TableBorder.Ascii)
             .BorderColor(Color.White)
             .Expand()
-            .AddColumn("[cyan]Filename[/]")
-            .AddColumn("[cyan]Filetype[/]")
-            .AddColumn("[grey]EXIF Created at[/]")
-            .AddColumn("[grey]EXIF File suffix[/]");
+            .AddColumn("[cyan]Old Filename[/]")
+            .AddColumn("[red]New Filename[/]")
+            .AddColumn("[grey]Extension[/]");
 
         GetProgressInteractor getProgress = new();
         var exifProgress = getProgress.Perform();
-
-        AnsiConsole.MarkupLine("Now getting Meta Data for each file ...");
 
         exifProgress.Start(ctx =>
         {
@@ -45,20 +44,17 @@ public class RenameCommand : Command<RenameSettings>
 
             files.ToList().ForEach(ff =>
             {
-                previewTable.AddRow(
-                    Markup.Escape(ff.Filename),
-                    ff.ExifFileType?.ToString() ?? "N/A",
-                    ff.ExifCreationDate?.ToString("yyyy-MM-dd hh:mm:ss") ?? "N/A",
-                    ff.ExifFileNameExtension ?? "N/A");
-
                 task.Increment(1);
+                previewTable.AddRow(new[]
+                {
+                    ff.Filename,
+                    GetFilename(ff) ?? "N/A",
+                    ff.ExifFileNameExtension ?? ff.Extension,
+                });
             });
         });
-
+        
         AnsiConsole.Write(previewTable);
-
-        AnsiConsole.MarkupLine("Images and Videos that have a creation date will " +
-            "be renamed. Files that do not have such a date will not be changed!\r\n");
 
         if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to rename files?")))
             return 0;
@@ -69,42 +65,50 @@ public class RenameCommand : Command<RenameSettings>
             .Border(TableBorder.Ascii)
             .BorderColor(Color.White)
             .Expand()
-            .AddColumn("[cyan]Old filename[/]")
-            .AddColumn("[cyan]Extension[/]")
-            .AddColumn("[cyan]New filename[/]");
+            .AddColumn("[cyan]Filename[/]")
+            .AddColumn("[red]status[/]");
 
         renameProgress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
 
-            files.ToList().ForEach(ff =>
+            var result = files.Select(ff =>
             {
-                var row = new string[]
-                {
-                    Markup.Escape(ff.Filename),
-                    Markup.Escape(ff.Extension),
-                    "N/A (ignored)"
-                };
-
-                if (ff.IsAccepted)
-                {
-                    var newFile = ff.RenameToDateTemplate("yyyyMMdd_hhmmss");
-
-                    row[2] = newFile?.Filename ?? "N/A";
-                }
-                else
-                {
-                }
-
                 task.Increment(1);
 
-                renameTable.AddRow(row);
+                var dateFilename = GetFilename(ff);
+
+                if (dateFilename is null)
+                {
+                    return new[] { ff.Filename, "cannot create filename" };
+                }
+
+                var newFilename = $"{dateFilename}.{ff.ExifFileNameExtension ?? ff.Extension}";
+                var newFilePath = Path.Combine(ff.Dir.AbsolutePath, newFilename);
+
+                if (File.Exists(newFilePath))
+                {
+                    return new[] { ff.Filename, "target already exists" };
+                }
+                
+                File.Move(ff.AbsolutePath, newFilePath, false);
+                
+                return new[] { ff.Filename, $"renamed to {newFilename}" };
             });
+            
+            result.ToList().ForEach(rr => renameTable.AddRow(rr));
         });
 
         AnsiConsole.Write(renameTable);
 
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);
+    }
+
+    private string GetFilename(MediaFile file)
+    {
+        if (file.ExifCreationDate?.ToString("yyyyMMdd_hhmmss") is string date)
+            return "img_" + date;
+        return null;
     }
 }

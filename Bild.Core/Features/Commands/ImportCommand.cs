@@ -16,7 +16,7 @@ public class ImportCommand : Command<ImportSettings>
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE all files from source " + 
+        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " + 
             "to target folder. Please select a [red]source folder[/] first!\r\n");
 
         PathSelectorInteractor pathSelector = new();
@@ -38,7 +38,10 @@ public class ImportCommand : Command<ImportSettings>
 
         GetProgressInteractor getProgress = new();
         var progress = getProgress.Perform();
-
+        
+        List<string> copiedFiles = [];
+        List<string> skippedFiles = [];
+        
         progress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
@@ -49,15 +52,33 @@ public class ImportCommand : Command<ImportSettings>
                 
                 if (!file.IsAccepted)
                 {
-                    AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] is not an accepted filetype.");
+                    skippedFiles.Add(file.AbsolutePath);
+                    AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] is skipped.");
                     
                     continue;
                 }
 
+                copiedFiles.Add(file.AbsolutePath);
                 file.CopyTo(targetPath);
             }
         });
 
+        foreach (var file in files)
+        {
+            if (copiedFiles.Contains(file.AbsolutePath))
+            {
+                AnsiConsole.MarkupLine($"[green]{file.AbsolutePath}[/] was copied.");
+            }
+            else if (skippedFiles.Contains(file.AbsolutePath))
+            {
+                AnsiConsole.MarkupLine($"[yellow]{file.AbsolutePath}[/] was skipped.");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] was lost.");
+            }
+        }
+        
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);
     }

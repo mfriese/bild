@@ -57,20 +57,10 @@ public class MoveToFolderCommand : Command<MoveToFolderSettings>
             
             if (!Directory.Exists(targetDir))
                 Directory.CreateDirectory(targetDir);
-            
-            // var hashSuffix = getB36Hash.Perform(md5, file.AbsolutePath);
-
-            var filename = "img_" + creationDate?.ToString("yyyyMMdd_hhmmss");
-            var extension = file.exifFileNameExtension ?? file.Extension;
 
             AnsiConsole.MarkupLine($"Moving [red]{file.AbsolutePath}[/] to [red]{targetDir}[/].");
             
             file.MoveTo(new MediaDir(targetDir));
-
-            // GetShortHash(file);
-            // GetFilename(file, shortHash);
-            // GetTargetPath();
-            // MoveToPath(file, targetPath);
         }
 
         WaitKeyPressInteractor waitKeyPress = new();

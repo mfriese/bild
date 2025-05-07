@@ -15,7 +15,8 @@ public class ImportPathOrSelectInteractor
             $"folder [red]{selectedPath}[/]?")))
         {
             PathSelectorInteractor pathSelector = new();
-            selectedPath = new MediaDir(pathSelector.Perform(selectedPath.AbsolutePath));
+            var path = pathSelector.Perform(selectedPath.AbsolutePath);
+            selectedPath = new MediaDir(path);
         }
 
         return selectedPath;
