@@ -44,7 +44,6 @@ public class Program
             AnsiConsole.Clear();
             AnsiConsole.Write(
             new FigletText("Bild App")
-                .Centered()
                 .Color(Color.White));
 
             var selected = AnsiConsole.Prompt(

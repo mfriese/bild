@@ -1,8 +1,5 @@
-using System.Security.Cryptography;
 using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
-using Bild.Core.Interactors.Files;
-using Bild.Core.Interactors.Hashing;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
@@ -12,8 +9,8 @@ namespace Bild.Core.Features.Commands;
 
 public class MoveToFolderCommand : Command<MoveToFolderSettings>
 {
-    public static string Name => "Move from import folder to correct subfolder";
-    
+    public static string Name => "Insert imports into library";
+
     public override int Execute(CommandContext context, MoveToFolderSettings settings)
     {
         GetImportPathInteractor getImportPath = new();
@@ -21,18 +18,21 @@ public class MoveToFolderCommand : Command<MoveToFolderSettings>
 
         GetLibraryPathInteractor getLibraryPath = new();
         var targetPath = getLibraryPath.Perform(settings);
-        
+
+        var pp = new ConfirmationPrompt($"Move media from [red]{sourcePath}[/] to target " +
+            $"folder [red]{targetPath}[/]? Continue?");
+
+        if (!AnsiConsole.Prompt(pp))
+            return 1;
+
         var files = Finder.FindFiles(sourcePath?.AbsolutePath);
 
-        var md5 = MD5.Create();
-        GetB36HashInteractor getB36Hash = new();
-        
         foreach (var file in files)
         {
             if (!file.IsAccepted)
             {
-                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/]File is not accepted.");
-                
+                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] -> not accepted.");
+
                 continue;
             }
 
@@ -43,24 +43,31 @@ public class MoveToFolderCommand : Command<MoveToFolderSettings>
 
             if (string.IsNullOrEmpty(year) || string.IsNullOrEmpty(month))
             {
-                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/]has no exif information.");
-                
+                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] -> no exif data.");
+
                 continue;
             }
-            
+
             var targetRootDir = targetPath?.AbsolutePath ?? string.Empty;
             var targetYearDir = Path.Combine(targetRootDir, year);
-            var targetDir = Path.Combine(targetYearDir, month);;
-            
+            var targetDir = Path.Combine(targetYearDir, month);
+
             if (!Directory.Exists(targetYearDir))
                 Directory.CreateDirectory(targetYearDir);
-            
+
             if (!Directory.Exists(targetDir))
                 Directory.CreateDirectory(targetDir);
 
-            AnsiConsole.MarkupLine($"Moving [red]{file.AbsolutePath}[/] to [red]{targetDir}[/].");
-            
-            file.MoveTo(new MediaDir(targetDir));
+            AnsiConsole.Markup($"Moving [cyan]{file.AbsolutePath}[/] to [cyan]{targetDir}[/] ... ");
+
+            if (file.MoveTo(new MediaDir(targetDir)) is null)
+            {
+                AnsiConsole.MarkupLine("[green]success[/]!");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[red]failed[/]! (file untouched)");
+            }
         }
 
         WaitKeyPressInteractor waitKeyPress = new();

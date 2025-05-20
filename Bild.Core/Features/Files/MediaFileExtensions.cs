@@ -1,62 +1,37 @@
-﻿using Bild.Core.Interactors.Files;
-using Spectre.Console;
-
-namespace Bild.Core.Features.Files;
+﻿namespace Bild.Core.Features.Files;
 
 public static class MediaFileExtensions
 {
     public static MediaFile CopyTo(this MediaFile file, MediaDir targetDir)
-    {
-        if (!File.Exists(file.AbsolutePath))
-        {
-            AnsiConsole.MarkupLine($"[red]Source file {file.Filename} does not exist![/]");
-            
-            return null;
-        }
+        => file.CopyOrMove(targetDir, true);
 
-        var targetPath = targetDir.AbsolutePath;
-        
-        if (!Directory.Exists(targetPath))
-        {
-            AnsiConsole.MarkupLine($"[red]Target directory {targetDir} does not exist![/]");
-            
-            return null;
-        }
-
-        ResolveNameClashInteractor resolveNameClash = new();
-        var targetExtension = file.ExifFileNameExtension ?? file.Extension;
-        var targetFilename = resolveNameClash.Perform(targetPath, file.Filename, targetExtension);
-        var targetFilePath = Path.Combine(targetPath, $"{targetFilename}.{targetExtension}"); 
-
-        File.Copy(file.AbsolutePath, targetFilePath, false);
-
-        return new MediaFile(targetFilePath);
-    }
-    
     public static MediaFile MoveTo(this MediaFile file, MediaDir targetDir)
+        => file.CopyOrMove(targetDir, false);
+
+    private static MediaFile CopyOrMove(this MediaFile file, MediaDir targetDir, bool makeCopy)
     {
         if (!File.Exists(file.AbsolutePath))
-        {
-            AnsiConsole.MarkupLine($"[red]Source file {file.Filename} does not exist![/]");
-            
             return null;
-        }
 
         var targetPath = targetDir.AbsolutePath;
-        
+
         if (!Directory.Exists(targetPath))
-        {
-            AnsiConsole.MarkupLine($"[red]Target directory {targetDir} does not exist![/]");
-            
             return null;
-        }
 
-        ResolveNameClashInteractor resolveNameClash = new();
         var targetExtension = file.ExifFileNameExtension ?? file.Extension;
-        var targetFilename = resolveNameClash.Perform(targetPath, file.Filename, targetExtension);
-        var targetFilePath = Path.Combine(targetPath, $"{targetFilename}.{targetExtension}"); 
+        var targetFilePath = Path.Combine(targetPath, $"{file.Filename}.{targetExtension}");
 
-        File.Move(file.AbsolutePath, targetFilePath, false);
+        if (File.Exists(targetFilePath))
+            return null;
+
+        if (makeCopy)
+        {
+            File.Copy(file.AbsolutePath, targetFilePath, false);
+        }
+        else
+        {
+            File.Move(file.AbsolutePath, targetFilePath, false);
+        }
 
         return new MediaFile(targetFilePath);
     }

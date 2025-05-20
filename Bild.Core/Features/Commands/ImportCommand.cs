@@ -1,22 +1,20 @@
 ﻿using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
-using Bild.Core.Interactors.Hashing;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using System.Security.Cryptography;
 
 namespace Bild.Core.Features.Commands;
 
 public class ImportCommand : Command<ImportSettings>
 {
-    public static string Name => "Import files into photos library";
+    public static string Name => "Copy to import folder";
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " + 
+        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " +
             "to target folder. Please select a [red]source folder[/] first!\r\n");
 
         PathSelectorInteractor pathSelector = new();
@@ -29,7 +27,7 @@ public class ImportCommand : Command<ImportSettings>
         var targetPath = getImportPath.Perform(settings);
 
         var pp = new ConfirmationPrompt($"Recursively import media from [red]{sourcePath}[/] " +
-            $"to target folder [red]{targetPath}[/]. Files will be copied. Continue?");
+            $"to target folder [red]{targetPath}[/]? Files will be copied. Continue?");
 
         if (!AnsiConsole.Prompt(pp))
             return 1;
@@ -38,10 +36,10 @@ public class ImportCommand : Command<ImportSettings>
 
         GetProgressInteractor getProgress = new();
         var progress = getProgress.Perform();
-        
+
         List<string> copiedFiles = [];
         List<string> skippedFiles = [];
-        
+
         progress.Start(ctx =>
         {
             var task = ctx.AddTask($"[green]{files.Count()} files[/]", maxValue: files.Count());
@@ -49,12 +47,12 @@ public class ImportCommand : Command<ImportSettings>
             foreach (var file in files)
             {
                 task.Increment(1);
-                
+
                 if (!file.IsAccepted)
                 {
                     skippedFiles.Add(file.AbsolutePath);
                     AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] is skipped.");
-                    
+
                     continue;
                 }
 
@@ -75,10 +73,10 @@ public class ImportCommand : Command<ImportSettings>
             }
             else
             {
-                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] was lost.");
+                AnsiConsole.MarkupLine($"[red]{file.AbsolutePath}[/] has unknown status.");
             }
         }
-        
+
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);
     }
