@@ -1,6 +1,5 @@
-﻿using Spectre.Console;
-using System.Security.Cryptography;
-using Bild.Core.Features.Importer;
+﻿using Bild.Core.Features.Importer;
+using Spectre.Console;
 
 namespace Bild.Core.Interactors.Hashing;
 
@@ -18,7 +17,6 @@ public class GetAllHashesInteractor
         }
 
         var files = Finder.FindFiles(rootPath).Select(ff => ff.AbsolutePath).ToArray();
-        //var files = Directory.GetFiles(rootPath, "*", SearchOption.AllDirectories);
 
         var progress = AnsiConsole.Progress()
             .AutoClear(false)
@@ -33,8 +31,7 @@ public class GetAllHashesInteractor
                 new SpinnerColumn()
             ]);
 
-        using var md5 = MD5.Create();
-        GetMD5HashInteractor getMd5Hash = new();
+        GetHashInteractor getMd5Hash = new();
 
         AnsiConsole.MarkupLine($"Calculating hashes in: '{rootPath}'");
 
@@ -46,7 +43,7 @@ public class GetAllHashesInteractor
             {
                 try
                 {
-                    string hash = getMd5Hash.Perform(md5, file);
+                    string hash = getMd5Hash.Perform(file);
                     hashes.Add(new Tuple<string, string>(hash, file));
                     task.Value = hashes.Count;
                 }

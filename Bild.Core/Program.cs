@@ -32,9 +32,9 @@ public class Program
         var options = new string[]
         {
             ImportCommand.Name,
-            MoveToFolderCommand.Name,
             DuplicatesCommand.Name,
             RenameCommand.Name,
+            MoveToFolderCommand.Name,
             ConfigureCommand.Name,
             Cancel
         };

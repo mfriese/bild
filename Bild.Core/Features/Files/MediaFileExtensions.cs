@@ -1,4 +1,6 @@
-﻿namespace Bild.Core.Features.Files;
+﻿using Bild.Core.Interactors.Hashing;
+
+namespace Bild.Core.Features.Files;
 
 public static class MediaFileExtensions
 {
@@ -21,18 +23,38 @@ public static class MediaFileExtensions
         var targetExtension = file.ExifFileNameExtension ?? file.Extension;
         var targetFilePath = Path.Combine(targetPath, $"{file.Filename}.{targetExtension}");
 
-        if (File.Exists(targetFilePath))
-            return null;
+        var fileExists = File.Exists(targetFilePath);
 
         if (makeCopy)
         {
-            File.Copy(file.AbsolutePath, targetFilePath, false);
+            if (!fileExists)
+            {
+                File.Copy(file.AbsolutePath, targetFilePath, false);
+
+                return new MediaFile(targetFilePath);
+            }
         }
         else
         {
-            File.Move(file.AbsolutePath, targetFilePath, false);
+            if (!fileExists)
+            {
+                File.Move(file.AbsolutePath, targetFilePath, false);
+
+                return new MediaFile(targetFilePath);
+            }
+
+            GetHashInteractor getMD5Hash = new();
+            var sourceHash = getMD5Hash.Perform(file.AbsolutePath);
+            var targetHash = getMD5Hash.Perform(targetFilePath);
+
+            if (sourceHash == targetHash)
+            {
+                File.Delete(file.AbsolutePath);
+
+                return new MediaFile(targetFilePath);
+            }
         }
 
-        return new MediaFile(targetFilePath);
+        return null;
     }
 }

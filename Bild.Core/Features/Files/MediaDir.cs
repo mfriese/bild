@@ -2,6 +2,8 @@
 
 public class MediaDir(string path)
 {
+    public const MediaDir Empty = null;
+
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
     public IEnumerable<MediaDir> Dirs => FindDirectories();

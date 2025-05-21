@@ -11,12 +11,15 @@ public class ImportPathOrSelectInteractor
         GetLibraryPathInteractor getLibraryPath = new();
         var selectedPath = getLibraryPath.Perform();
 
-        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Use you photo library " +
+        if (!AnsiConsole.Prompt(new ConfirmationPrompt("Use your photo library " +
             $"folder [red]{selectedPath}[/]?")))
         {
             PathSelectorInteractor pathSelector = new();
             var path = pathSelector.Perform(selectedPath.AbsolutePath);
-            selectedPath = new MediaDir(path);
+
+            selectedPath = string.IsNullOrEmpty(path) ?
+                MediaDir.Empty :
+                new MediaDir(path);
         }
 
         return selectedPath;

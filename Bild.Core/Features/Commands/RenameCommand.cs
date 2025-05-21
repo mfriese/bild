@@ -26,7 +26,7 @@ public class RenameCommand : Command<RenameSettings>
         var files = Finder.FindFiles(selectedDir);
 
         AnsiConsole.MarkupLine("Now getting Meta Data for each file ...");
-        
+
         var previewTable = new Table()
             .Border(TableBorder.Ascii)
             .BorderColor(Color.White)
@@ -53,7 +53,7 @@ public class RenameCommand : Command<RenameSettings>
                 });
             });
         });
-        
+
         AnsiConsole.Write(previewTable);
 
         if (!AnsiConsole.Prompt(new ConfirmationPrompt("Proceed to rename files?")))
@@ -88,14 +88,14 @@ public class RenameCommand : Command<RenameSettings>
 
                 if (File.Exists(newFilePath))
                 {
-                    return new[] { ff.Filename, "target already exists" };
+                    return [ff.Filename, "target already exists"];
                 }
-                
+
                 File.Move(ff.AbsolutePath, newFilePath, false);
-                
-                return new[] { ff.Filename, $"renamed to {newFilename}" };
+
+                return [ff.Filename, $"renamed to {newFilename}"];
             });
-            
+
             result.ToList().ForEach(rr => renameTable.AddRow(rr));
         });
 

@@ -2,12 +2,14 @@
 
 namespace Bild.Core.Interactors.Hashing;
 
-public class GetMD5HashInteractor
+public class GetHashInteractor
 {
-    public string Perform(MD5 md5, string filePath)
+    private MD5 MD5 { get; } = MD5.Create();
+
+    public string Perform(string filePath)
     {
         using var stream = File.OpenRead(filePath);
-        var hashBytes = md5.ComputeHash(stream);
+        var hashBytes = MD5.ComputeHash(stream);
         return Convert.ToHexStringLower(hashBytes);
     }
 }

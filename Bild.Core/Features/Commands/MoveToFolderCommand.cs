@@ -60,7 +60,7 @@ public class MoveToFolderCommand : Command<MoveToFolderSettings>
 
             AnsiConsole.Markup($"Moving [cyan]{file.AbsolutePath}[/] to [cyan]{targetDir}[/] ... ");
 
-            if (file.MoveTo(new MediaDir(targetDir)) is null)
+            if (file.MoveTo(new MediaDir(targetDir)) is not null)
             {
                 AnsiConsole.MarkupLine("[green]success[/]!");
             }
