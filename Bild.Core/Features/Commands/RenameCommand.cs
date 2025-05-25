@@ -86,9 +86,15 @@ public class RenameCommand : Command<RenameSettings>
                 var newFilename = $"{dateFilename}.{ff.ExifFileNameExtension ?? ff.Extension}";
                 var newFilePath = Path.Combine(ff.Dir.AbsolutePath, newFilename);
 
-                if (File.Exists(newFilePath))
+                if (newFilePath == ff.AbsolutePath)
                 {
-                    return [ff.Filename, "target already exists"];
+                    return [ff.Filename, "already has correct name"];
+                }
+
+                for(int ii = 1; File.Exists(newFilePath); ++ii)
+                {
+                    newFilename = $"{dateFilename}_{ii}.{ff.ExifFileNameExtension ?? ff.Extension}";
+                    newFilePath = Path.Combine(ff.Dir.AbsolutePath, newFilename);
                 }
 
                 File.Move(ff.AbsolutePath, newFilePath, false);
