@@ -10,11 +10,11 @@ namespace Bild.Core.Features.Commands;
 
 public class ImportCommand : Command<ImportSettings>
 {
-    public static string Name => "Copy to import folder";
+    public static string Name => "Move to import folder";
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {
-        AnsiConsole.MarkupLine($"Current setting for import. I will COPY all files from source " +
+        AnsiConsole.MarkupLine($"Current setting for import. I will MOVE all files from source " +
             "to target folder. Please select a [red]source folder[/] first!\r\n");
 
         PathSelectorInteractor pathSelector = new();
@@ -27,7 +27,7 @@ public class ImportCommand : Command<ImportSettings>
         var targetPath = getImportPath.Perform(settings);
 
         var pp = new ConfirmationPrompt($"Recursively import media from [red]{sourcePath}[/] " +
-            $"to target folder [red]{targetPath}[/]? Files will be copied. Continue?");
+            $"to target folder [red]{targetPath}[/]? Files will be moved. Continue?");
 
         if (!AnsiConsole.Prompt(pp))
             return 1;
@@ -57,7 +57,7 @@ public class ImportCommand : Command<ImportSettings>
                 }
 
                 copiedFiles.Add(file.AbsolutePath);
-                file.CopyTo(targetPath);
+                file.MoveTo(targetPath);
             }
         });
 

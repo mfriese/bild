@@ -39,20 +39,13 @@ public static class MediaFileExtensions
             if (!fileExists)
             {
                 File.Move(file.AbsolutePath, targetFilePath, false);
-
-                return new MediaFile(targetFilePath);
             }
-
-            GetHashInteractor getMD5Hash = new();
-            var sourceHash = getMD5Hash.Perform(file.AbsolutePath);
-            var targetHash = getMD5Hash.Perform(targetFilePath);
-
-            if (sourceHash == targetHash)
+            else
             {
                 File.Delete(file.AbsolutePath);
-
-                return new MediaFile(targetFilePath);
             }
+            
+            return new MediaFile(targetFilePath);
         }
 
         return null;

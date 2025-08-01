@@ -1,6 +1,7 @@
 ﻿using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
+using Bild.Core.Interactors.Hashing;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -83,21 +84,23 @@ public class RenameCommand : Command<RenameSettings>
                     return new[] { ff.Filename, "cannot create filename" };
                 }
 
+                var fileAbsPath = ff.AbsolutePath;
+                var fileExt = ff.ExifFileNameExtension ?? ff.Extension;
+                var tempFilePath = Path.Combine(ff.Dir.AbsolutePath, $"{Guid.NewGuid()}.{fileExt}");
+
+                File.Move(fileAbsPath, tempFilePath, false);
+
                 var newFilename = $"{dateFilename}.{ff.ExifFileNameExtension ?? ff.Extension}";
                 var newFilePath = Path.Combine(ff.Dir.AbsolutePath, newFilename);
 
-                if (newFilePath == ff.AbsolutePath)
+                if (File.Exists(newFilePath))
                 {
-                    return [ff.Filename, "already has correct name"];
+                    File.Delete(tempFilePath);
+
+                    return [ff.Filename, $"duplicate by name found {newFilename}"];
                 }
 
-                for(int ii = 1; File.Exists(newFilePath); ++ii)
-                {
-                    newFilename = $"{dateFilename}_{ii}.{ff.ExifFileNameExtension ?? ff.Extension}";
-                    newFilePath = Path.Combine(ff.Dir.AbsolutePath, newFilename);
-                }
-
-                File.Move(ff.AbsolutePath, newFilePath, false);
+                File.Move(tempFilePath, newFilePath, false);
 
                 return [ff.Filename, $"renamed to {newFilename}"];
             });
