@@ -10,7 +10,7 @@ namespace Bild.Core.Features.Commands;
 
 public class ImportCommand : Command<ImportSettings>
 {
-    public static string Name => "Move to import folder";
+    public static string Name => "_Move to import folder";
 
     public override int Execute(CommandContext context, ImportSettings settings)
     {

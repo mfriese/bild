@@ -8,7 +8,7 @@ namespace Bild.Core.Features.Commands;
 
 public class DuplicatesCommand : Command<DuplicatesSettings>
 {
-    public static string Name => "Delete Duplicate Files";
+    public static string Name => "_Delete Duplicate Files";
 
     public override int Execute(CommandContext context, DuplicatesSettings settings)
     {

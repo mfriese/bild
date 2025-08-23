@@ -9,7 +9,7 @@ namespace Bild.Core.Features.Commands;
 
 public class MoveToFolderCommand : Command<MoveToFolderSettings>
 {
-    public static string Name => "Insert imports into library";
+    public static string Name => "_Insert imports into library";
 
     public override int Execute(CommandContext context, MoveToFolderSettings settings)
     {

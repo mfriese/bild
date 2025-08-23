@@ -39,6 +39,9 @@ public class MediaFile(string path)
         return FileTypeDetector.DetectFileType(stream);
     }
 
+    public bool IsImage
+        => ExifFileType == FileType.Jpeg;
+
     private DateTime? GetExifCreationDate()
     {
         try

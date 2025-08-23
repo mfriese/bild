@@ -1,7 +1,6 @@
 ﻿using Bild.Core.Features.Files;
 using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
-using Bild.Core.Interactors.Hashing;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -10,7 +9,7 @@ namespace Bild.Core.Features.Commands;
 
 public class RenameCommand : Command<RenameSettings>
 {
-    public static string Name => "Rename files to Exif Date";
+    public static string Name => "_Rename files to Exif Date";
 
     public override int Execute(CommandContext context, RenameSettings settings)
     {
