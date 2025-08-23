@@ -1,6 +1,4 @@
-﻿using Bild.Core.Interactors.Hashing;
-
-namespace Bild.Core.Features.Files;
+﻿namespace Bild.Core.Features.Files;
 
 public static class MediaFileExtensions
 {
@@ -44,7 +42,7 @@ public static class MediaFileExtensions
             {
                 File.Delete(file.AbsolutePath);
             }
-            
+
             return new MediaFile(targetFilePath);
         }
 

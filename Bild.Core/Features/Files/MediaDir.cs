@@ -50,7 +50,6 @@ public class MediaDir(string path)
                 using var targetStream = File.OpenRead(targetFilePath);
                 ulong sourceHash = hashAlgorithm.Hash(sourceStream);
                 ulong targetHash = hashAlgorithm.Hash(targetStream);
-                // Assume NOT similar
                 double similarity = CompareHash.Similarity(sourceHash, targetHash);
 
                 if (99.9 > similarity)

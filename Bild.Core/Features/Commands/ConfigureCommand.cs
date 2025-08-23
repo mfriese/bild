@@ -24,7 +24,7 @@ public class ConfigureCommand : Command<ConfigureSettings>
 
         AnsiConsole.Write(table);
 
-        if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Change settings?")))
+        if (AnsiConsole.Prompt(new ConfirmationPrompt($"Keep settings?")))
             return 0;
 
         AnsiConsole.MarkupLine("\r\nWhere is your photos library?");

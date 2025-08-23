@@ -1,5 +1,4 @@
-﻿using Bild.Core.Features.Files;
-using Bild.Core.Features.Importer;
+﻿using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
@@ -36,16 +35,30 @@ internal class NewImportCommand : Command<NewImportSettings>
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Continue?")))
             return 1;
 
-        var files = Finder.
+        var scannedFiles = Finder.
             FindFiles(sourcePath).
-            Where(ff => ff.IsAccepted);
+            ToList();
 
-        AnsiConsole.MarkupLine($"Found [yellow]{files.Count()}[/] files.");
+        var acceptedfiles = scannedFiles.
+            Where(ff => ff.IsAccepted).
+            ToList();
+
+        scannedFiles.
+            RemoveAll(acceptedfiles.Contains);
+
+        foreach (var file in scannedFiles)
+        {
+            AnsiConsole.MarkupLine($"Removed [yellow]{file.AbsolutePath}[/].");
+        }
+
+        AnsiConsole.MarkupLine($"Working with [yellow]{acceptedfiles.Count}[/] files.");
         AnsiConsole.MarkupLine("");
 
-        foreach (var file in files)
+        int counter = 0;
+
+        foreach (var file in acceptedfiles)
         {
-            var result = CopyFile(file, targetPath);
+            var result = targetPath.Insert(file);
 
             var resultTree = new Tree(file.AbsolutePath);
 
@@ -58,29 +71,13 @@ internal class NewImportCommand : Command<NewImportSettings>
                 resultTree.AddNode($"{result.Error}");
             }
 
+            resultTree.AddNode($"File {++counter} of {acceptedfiles.Count}.");
+
             AnsiConsole.Write(resultTree);
             AnsiConsole.MarkupLine("");
         }
 
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);
-    }
-
-    private static Result<string> CopyFile(MediaFile file, MediaDir target)
-    {
-        var creationDate = file.ExifCreationDate;
-        var year = creationDate?.ToString("yyyy") ?? string.Empty;
-        var month = creationDate?.ToString("MM") ?? string.Empty;
-
-        if (string.IsNullOrEmpty(year) || string.IsNullOrEmpty(month))
-        {
-            return Result.Failure<string>($"[red]Cannot find EXIF data.[/]");
-        }
-
-        var targetSubDir = target.
-            GetOrCreateSubdirectory(year).
-            GetOrCreateSubdirectory(month);
-
-        return targetSubDir.Insert(file);
     }
 }
