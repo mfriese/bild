@@ -54,7 +54,7 @@ public class MediaFile(string path)
                 case FileType.Mp4:
                 case FileType.QuickTime:
                     GetCreationDateMp4Interactor getMp4CreationDate = new();
-                    return getMp4CreationDate.Perform(Exif);
+                    return getMp4CreationDate.Perform(AbsolutePath);
                 default:
                     Console.WriteLine("Cannot identify");
                     return null;

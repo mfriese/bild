@@ -40,24 +40,41 @@ internal class NewImportCommand : Command<NewImportSettings>
             FindFiles(sourcePath).
             ToList();
 
-        var acceptedfiles = scannedFiles.
-            Where(ff => ff.IsAccepted).
-            ToList();
+        var acceptedFiles = new List<MediaFile>();
+        
+        GetProgressInteractor getProgress = new();
+        var progressIndicator = getProgress.Perform();
+        
+        progressIndicator.Start(ctx => 
+        {
+            var task = ctx.AddTask(
+                $"[green]Scanning {scannedFiles.Count} files[/]",
+                maxValue: scannedFiles.Count);
 
+            acceptedFiles.AddRange(scannedFiles.Where(ff =>
+            {
+                task.Increment(1);
+                return ff.IsAccepted;
+            }));
+        });
+        
         scannedFiles.
-            RemoveAll(acceptedfiles.Contains);
+            RemoveAll(acceptedFiles.Contains);
 
         foreach (var file in scannedFiles)
         {
             AnsiConsole.MarkupLine($"Removed [yellow]{file.AbsolutePath}[/].");
         }
 
-        AnsiConsole.MarkupLine($"Working with [yellow]{acceptedfiles.Count}[/] files.");
+        AnsiConsole.MarkupLine($"Working with [yellow]{acceptedFiles.Count}[/] files.");
         AnsiConsole.MarkupLine("");
 
+        if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Continue?")))
+            return 1;
+        
         int counter = 0;
 
-        foreach (var file in acceptedfiles)
+        foreach (var file in acceptedFiles)
         {
             var result = CopyFile(file, targetPath);
 
@@ -72,7 +89,7 @@ internal class NewImportCommand : Command<NewImportSettings>
                 resultTree.AddNode($"{result.Error}");
             }
 
-            resultTree.AddNode($"File {++counter} of {acceptedfiles.Count}.");
+            resultTree.AddNode($"File {++counter} of {acceptedFiles.Count}.");
 
             AnsiConsole.Write(resultTree);
             AnsiConsole.MarkupLine("");
