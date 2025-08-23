@@ -52,7 +52,7 @@ public class MediaDir(string path)
                 ulong targetHash = hashAlgorithm.Hash(targetStream);
                 double similarity = CompareHash.Similarity(sourceHash, targetHash);
 
-                if (99.9 > similarity)
+                if (99.8 > similarity)
                 {
                     // Similarity is not 100% so it is a different file
                     return Result.Failure<string>($"[red]Target file already exists.[/]");
@@ -60,7 +60,7 @@ public class MediaDir(string path)
                 else
                 {
                     // Similarity is 100% so it is the same file
-                    return Result.Success($"[green]File already exists, skipping.[/]");
+                    return Result.Success($"[green]Similar file already exists, skipping.[/]");
                 }
             }
             else

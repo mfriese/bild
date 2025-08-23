@@ -1,4 +1,5 @@
-﻿using Bild.Core.Features.Importer;
+﻿using Bild.Core.Features.Files;
+using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
@@ -58,7 +59,7 @@ internal class NewImportCommand : Command<NewImportSettings>
 
         foreach (var file in acceptedfiles)
         {
-            var result = targetPath.Insert(file);
+            var result = CopyFile(file, targetPath);
 
             var resultTree = new Tree(file.AbsolutePath);
 
@@ -79,5 +80,23 @@ internal class NewImportCommand : Command<NewImportSettings>
 
         WaitKeyPressInteractor waitKeyPress = new();
         return waitKeyPress.Perform(0);
+    }
+
+    private static Result<string> CopyFile(MediaFile file, MediaDir target)
+    {
+        var creationDate = file.ExifCreationDate;
+        var year = creationDate?.ToString("yyyy") ?? string.Empty;
+        var month = creationDate?.ToString("MM") ?? string.Empty;
+
+        if (string.IsNullOrEmpty(year) || string.IsNullOrEmpty(month))
+        {
+            return Result.Failure<string>($"[red]Cannot find EXIF data.[/]");
+        }
+
+        var targetSubDir = target.
+            GetOrCreateSubdirectory(year).
+            GetOrCreateSubdirectory(month);
+
+        return targetSubDir.Insert(file);
     }
 }
