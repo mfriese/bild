@@ -29,10 +29,10 @@ public class MediaDir(string path)
         return new MediaDir(subDirPath);
     }
 
-    public Result<string> Insert(MediaFile file)
+    public Result<string> Insert(MediaFile file, bool randomSuffix = false)
     {
         GetExifFilenameInteractor getExifFilename = new();
-        var targetFilename = getExifFilename.Perform(file);
+        var targetFilename = getExifFilename.Perform(file, randomSuffix);
 
         if (targetFilename is null)
         {
@@ -52,10 +52,10 @@ public class MediaDir(string path)
                 ulong targetHash = hashAlgorithm.Hash(targetStream);
                 double similarity = CompareHash.Similarity(sourceHash, targetHash);
 
-                if (99.8 > similarity)
+                if (99.9 > similarity)
                 {
-                    // Similarity is not 100% so it is a different file
-                    return Result.Failure<string>($"[red]Target file already exists.[/]");
+                    // seems like a different file. Add a random suffix to avoid collision.
+                    return Insert(file, true);
                 }
                 else
                 {
