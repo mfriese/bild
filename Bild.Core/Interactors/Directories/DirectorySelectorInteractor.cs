@@ -24,6 +24,7 @@ public class DirectorySelectorInteractor
             directories = Directory.
                 GetDirectories(rootPath).
                 Select(Path.GetFileName).
+                Order().
                 ToList();
         }
         catch (Exception exp)

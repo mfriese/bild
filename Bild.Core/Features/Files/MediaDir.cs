@@ -72,7 +72,7 @@ public class MediaDir(string path)
 
         File.Copy(file.AbsolutePath, targetFilePath);
 
-        return Result.Success("[green]File successfully copied![/]");
+        return Result.Success($"[green]File successfully copied to {targetFilePath}[/]");
     }
 
     private static IEnumerable<MediaDir> FindDirectories(string absolutePath)

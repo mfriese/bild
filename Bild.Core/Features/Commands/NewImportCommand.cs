@@ -73,6 +73,7 @@ internal class NewImportCommand : Command<NewImportSettings>
             return 1;
         
         int counter = 0;
+        int delete = 1; // 0 = never, 1 = no, 2 = yes, 3 = always
 
         foreach (var file in acceptedFiles)
         {
@@ -93,6 +94,35 @@ internal class NewImportCommand : Command<NewImportSettings>
 
             AnsiConsole.Write(resultTree);
             AnsiConsole.MarkupLine("");
+
+            if (!result.IsSuccess)
+            {
+                continue;
+            }
+            
+            if (delete is 1 or 2)
+            {
+                delete = AnsiConsole.Prompt(
+                    new TextPrompt<int>("Delete? 0 = never, 1 = no, 2 = yes, 3 = always")
+                        .AddChoice(0)
+                        .AddChoice(1)
+                        .AddChoice(2)
+                        .AddChoice(3)
+                        .DefaultValue(delete));
+            }
+
+            if (delete is 0 or 1)
+            {
+                continue;
+            }
+
+            if (delete is 2 or 3)
+            {
+                File.Delete(file.AbsolutePath);
+                
+                AnsiConsole.MarkupLine($"Deleted [yellow]{file.AbsolutePath}[/].");
+                AnsiConsole.MarkupLine($"");
+            }
         }
 
         WaitKeyPressInteractor waitKeyPress = new();
