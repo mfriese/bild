@@ -45,13 +45,24 @@ public class MediaDir(string path)
         {
             if (file.IsImage)
             {
-                var hashAlgorithm = new AverageHash();
-                using var sourceStream = File.OpenRead(file.AbsolutePath);
-                using var targetStream = File.OpenRead(targetFilePath);
-                ulong sourceHash = hashAlgorithm.Hash(sourceStream);
-                ulong targetHash = hashAlgorithm.Hash(targetStream);
-                double similarity = CompareHash.Similarity(sourceHash, targetHash);
-
+                double similarity = 0d;
+                
+                try
+                {
+                    // Hash algorithm might crash when source file is not flawless
+                    var hashAlgorithm = new AverageHash();
+                    using var sourceStream = File.OpenRead(file.AbsolutePath);
+                    using var targetStream = File.OpenRead(targetFilePath);
+                    ulong sourceHash = hashAlgorithm.Hash(sourceStream);
+                    ulong targetHash = hashAlgorithm.Hash(targetStream);
+                    similarity = CompareHash.Similarity(sourceHash, targetHash);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                }
+                
                 if (99.9 > similarity)
                 {
                     // seems like a different file. Add a random suffix to avoid collision.

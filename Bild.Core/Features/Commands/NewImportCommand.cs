@@ -8,6 +8,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace Bild.Core.Features.Commands;
+
 internal class NewImportCommand : Command<NewImportSettings>
 {
     public static string Name => "Copy from SOURCE to LIBRARY";
@@ -36,16 +37,14 @@ internal class NewImportCommand : Command<NewImportSettings>
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Continue?")))
             return 1;
 
-        var scannedFiles = Finder.
-            FindFiles(sourcePath).
-            ToList();
+        var scannedFiles = Finder.FindFiles(sourcePath).ToList();
 
         var acceptedFiles = new List<MediaFile>();
-        
+
         GetProgressInteractor getProgress = new();
         var progressIndicator = getProgress.Perform();
-        
-        progressIndicator.Start(ctx => 
+
+        progressIndicator.Start(ctx =>
         {
             var task = ctx.AddTask(
                 $"[green]Scanning {scannedFiles.Count} files[/]",
@@ -57,9 +56,8 @@ internal class NewImportCommand : Command<NewImportSettings>
                 return ff.IsAccepted;
             }));
         });
-        
-        scannedFiles.
-            RemoveAll(acceptedFiles.Contains);
+
+        scannedFiles.RemoveAll(acceptedFiles.Contains);
 
         foreach (var file in scannedFiles)
         {
@@ -71,58 +69,70 @@ internal class NewImportCommand : Command<NewImportSettings>
 
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Continue?")))
             return 1;
-        
+
         int counter = 0;
         int delete = 1; // 0 = never, 1 = no, 2 = yes, 3 = always
 
-        foreach (var file in acceptedFiles)
+        try
         {
-            var result = CopyFile(file, targetPath);
-
-            var resultTree = new Tree(file.AbsolutePath);
-
-            if (result.IsSuccess)
+            foreach (var file in acceptedFiles)
             {
-                resultTree.AddNode($"{result.Value}");
-            }
-            else
-            {
-                resultTree.AddNode($"{result.Error}");
-            }
+                var result = CopyFile(file, targetPath);
 
-            resultTree.AddNode($"File {++counter} of {acceptedFiles.Count}.");
+                var resultTree = new Tree(file.AbsolutePath);
 
-            AnsiConsole.Write(resultTree);
-            AnsiConsole.MarkupLine("");
+                if (result.IsSuccess)
+                {
+                    resultTree.AddNode($"{result.Value}");
+                }
+                else
+                {
+                    resultTree.AddNode($"{result.Error}");
+                }
 
-            if (!result.IsSuccess)
-            {
-                continue;
+                resultTree.AddNode($"File {++counter} of {acceptedFiles.Count}.");
+
+                AnsiConsole.Write(resultTree);
+                AnsiConsole.MarkupLine("");
+
+                if (!result.IsSuccess)
+                {
+                    continue;
+                }
+
+                if (delete is 1 or 2)
+                {
+                    delete = AnsiConsole.Prompt(
+                        new TextPrompt<int>("Delete? 0 = never, 1 = no, 2 = yes, 3 = always")
+                            .AddChoice(0)
+                            .AddChoice(1)
+                            .AddChoice(2)
+                            .AddChoice(3)
+                            .DefaultValue(delete));
+                }
+
+                if (delete is 0 or 1)
+                {
+                    continue;
+                }
+
+                if (delete is 2 or 3)
+                {
+                    File.Delete(file.AbsolutePath);
+
+                    AnsiConsole.MarkupLine($"Deleted [yellow]{file.AbsolutePath}[/].");
+                    AnsiConsole.MarkupLine($"");
+                }
             }
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[red]App has crashed![/].");
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
             
-            if (delete is 1 or 2)
-            {
-                delete = AnsiConsole.Prompt(
-                    new TextPrompt<int>("Delete? 0 = never, 1 = no, 2 = yes, 3 = always")
-                        .AddChoice(0)
-                        .AddChoice(1)
-                        .AddChoice(2)
-                        .AddChoice(3)
-                        .DefaultValue(delete));
-            }
-
-            if (delete is 0 or 1)
-            {
-                continue;
-            }
-
-            if (delete is 2 or 3)
-            {
-                File.Delete(file.AbsolutePath);
-                
-                AnsiConsole.MarkupLine($"Deleted [yellow]{file.AbsolutePath}[/].");
-                AnsiConsole.MarkupLine($"");
-            }
+            WaitKeyPressInteractor waitCrashKeyPress = new();
+            return waitCrashKeyPress.Perform(1);
         }
 
         WaitKeyPressInteractor waitKeyPress = new();
@@ -140,9 +150,7 @@ internal class NewImportCommand : Command<NewImportSettings>
             return Result.Failure<string>($"[red]Cannot find EXIF data.[/]");
         }
 
-        var targetSubDir = target.
-            GetOrCreateSubdirectory(year).
-            GetOrCreateSubdirectory(month);
+        var targetSubDir = target.GetOrCreateSubdirectory(year).GetOrCreateSubdirectory(month);
 
         return targetSubDir.Insert(file);
     }
