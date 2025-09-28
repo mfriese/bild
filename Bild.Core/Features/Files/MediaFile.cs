@@ -52,6 +52,7 @@ public class MediaFile(string path)
                     GetCreationDateJpgInteractor getJpgCreationDate = new();
                     return getJpgCreationDate.Perform(Exif);
                 case FileType.Cr2:
+                case FileType.Avi:
                     GetCreationDateCr2Interactor getCreationDateCr2 = new();
                     return getCreationDateCr2.Perform(AbsolutePath);
                 case FileType.Mp4:
@@ -101,7 +102,8 @@ public class MediaFile(string path)
         FileType.Jpeg,
         FileType.Mp4,
         FileType.QuickTime,
-        FileType.Cr2
+        FileType.Cr2,
+        FileType.Avi
     ];
 
     public override string ToString()
