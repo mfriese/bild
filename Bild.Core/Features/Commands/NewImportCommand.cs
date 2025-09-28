@@ -103,7 +103,7 @@ internal class NewImportCommand : Command<NewImportSettings>
                 if (delete is 1 or 2)
                 {
                     delete = AnsiConsole.Prompt(
-                        new TextPrompt<int>("Delete? 0 = never, 1 = no, 2 = yes, 3 = always")
+                        new TextPrompt<int>("Delete? (0)never, (1)no, (2)yes, (3)always")
                             .AddChoice(0)
                             .AddChoice(1)
                             .AddChoice(2)

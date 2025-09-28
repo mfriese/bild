@@ -53,8 +53,8 @@ public class MediaDir(string path)
                     var hashAlgorithm = new AverageHash();
                     using var sourceStream = File.OpenRead(file.AbsolutePath);
                     using var targetStream = File.OpenRead(targetFilePath);
-                    ulong sourceHash = hashAlgorithm.Hash(sourceStream);
-                    ulong targetHash = hashAlgorithm.Hash(targetStream);
+                    var sourceHash = hashAlgorithm.Hash(sourceStream);
+                    var targetHash = hashAlgorithm.Hash(targetStream);
                     similarity = CompareHash.Similarity(sourceHash, targetHash);
                 }
                 catch (Exception e)
