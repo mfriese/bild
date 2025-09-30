@@ -6,4 +6,9 @@ public class BaseSettings : CommandSettings
 {
     [CommandOption($"-p|--photosdir")]
     public string PhotosDir { get; set; } = "";
+
+    public IEnumerable<string> Args() =>
+    [
+        "-p", PhotosDir
+    ];
 }

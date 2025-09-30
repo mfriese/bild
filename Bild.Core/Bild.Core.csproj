@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="3.6.0" />
-    <PackageReference Include="MetadataExtractor" Version="2.9.0-rc2" />
+    <PackageReference Include="MetadataExtractor" Version="2.9.0-rc3" />
     <PackageReference Include="SharpExifTool" Version="13.32.0.1" />
     <PackageReference Include="Spectre.Console" Version="0.49.2-preview.0.77" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.77" />

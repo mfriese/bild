@@ -38,7 +38,7 @@ public class Program
             AnsiConsole.Clear();
             AnsiConsole.Write(
             new FigletText("Bild App")
-                .Color(Color.White));
+                .Color(Color.Blue));
 
             var selected = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -62,7 +62,7 @@ public class Program
                 LoadBaseSettingsInteractor loadBaseSettings = new();
                 var cfg = loadBaseSettings.Perform();
 
-                app.Run([selected, "-p", cfg.PhotosDir]);
+                app.Run(cfg.Args().Prepend(selected));
             }
         }
     }

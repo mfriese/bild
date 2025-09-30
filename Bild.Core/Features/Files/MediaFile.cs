@@ -1,18 +1,18 @@
 ﻿using Bild.Core.Interactors.EXIF;
-using MetadataExtractor;
+using Bild.Core.Interactors.ExifFlags;
 using MetadataExtractor.Util;
+using SharpExifTool;
 
 namespace Bild.Core.Features.Files;
 
 public class MediaFile(string path)
 {
-    private IReadOnlyList<MetadataExtractor.Directory> exif;
-    private IReadOnlyList<MetadataExtractor.Directory> Exif
-        => exif ??= ImageMetadataReader.ReadMetadata(AbsolutePath);
+    private ICollection<KeyValuePair<string, string>> exif;
+    public ICollection<KeyValuePair<string, string>> Exif
+        => exif ??= new ExifTool().ExtractAllMetadata(AbsolutePath);
 
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
-    public string Filename => Path.GetFileNameWithoutExtension(AbsolutePath);
     public string Extension => Path.GetExtension(AbsolutePath);
 
     public FileType? exifFileType;
@@ -24,19 +24,13 @@ public class MediaFile(string path)
     public string exifFileNameExtension;
     public string ExifFileNameExtension => exifFileNameExtension ??= GetExifFileNameExtension();
 
-    public DateTime? fileCreationDate;
-    public DateTime? FileCreationDate => fileCreationDate ??= GetFileCreationDate();
-
-    public MediaDir Dir => new(Path.GetDirectoryName(AbsolutePath));
-
     public bool IsAccepted
         => AcceptedTypes.Contains(GetExifFileType() ?? FileType.Unknown);
 
     private FileType? GetExifFileType()
     {
-        using var stream = new FileStream(AbsolutePath, FileMode.Open, FileAccess.Read);
-
-        return FileTypeDetector.DetectFileType(stream);
+        GetExifFileTypeInteractor getExifFileType = new();
+        return getExifFileType.Perform(this);
     }
 
     public bool IsImage
@@ -44,68 +38,22 @@ public class MediaFile(string path)
 
     private DateTime? GetExifCreationDate()
     {
-        try
-        {
-            switch (ExifFileType)
-            {
-                case FileType.Jpeg:
-                    GetCreationDateJpgInteractor getJpgCreationDate = new();
-                    return getJpgCreationDate.Perform(Exif);
-                case FileType.Cr2:
-                case FileType.Avi:
-                    GetCreationDateCr2Interactor getCreationDateCr2 = new();
-                    return getCreationDateCr2.Perform(AbsolutePath);
-                case FileType.Mp4:
-                case FileType.QuickTime:
-                    GetCreationDateMp4Interactor getMp4CreationDate = new();
-                    return getMp4CreationDate.Perform(AbsolutePath);
-                default:
-                    Console.WriteLine("Cannot identify");
-                    return null;
-            }
-        }
-        catch (Exception)
-        { }
-
-        return null;
+        GetCreationDateInteractor getCreationDate = new();
+        return getCreationDate.Perform(this);
     }
 
     private string GetExifFileNameExtension()
     {
-        try
-        {
-            GetFileNameExtensionInteractor getFileNameExtension = new();
-            return getFileNameExtension.Perform(Exif);
-        }
-        catch (Exception)
-        { }
-
-        return null;
-    }
-
-    private DateTime? GetFileCreationDate()
-    {
-        DateTime? creation = null;
-
-        try
-        {
-            creation = File.GetCreationTime(AbsolutePath);
-        }
-        catch (Exception)
-        { }
-
-        return creation;
+        GetFileTypeExtensionInteractor getFileNameExtension = new();
+        return getFileNameExtension.Perform(this);
     }
 
     public static FileType[] AcceptedTypes =>
     [
+        FileType.QuickTime,
         FileType.Jpeg,
         FileType.Mp4,
-        FileType.QuickTime,
         FileType.Cr2,
         FileType.Avi
     ];
-
-    public override string ToString()
-        => AbsolutePath;
 }

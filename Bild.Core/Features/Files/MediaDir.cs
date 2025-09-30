@@ -1,14 +1,10 @@
 ﻿using Bild.Core.Interactors.Files;
-using CoenM.ImageHash;
-using CoenM.ImageHash.HashAlgorithms;
 using CSharpFunctionalExtensions;
 
 namespace Bild.Core.Features.Files;
 
 public class MediaDir(string path)
 {
-    public const MediaDir Empty = null;
-
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
     public IEnumerable<MediaDir> Dirs
@@ -39,30 +35,15 @@ public class MediaDir(string path)
             return Result.Failure<string>($"[red]Cannot determine target filename![/]");
         }
 
-        var targetFilePath = Path.Combine(AbsolutePath, targetFilename);
+        var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilename));
 
-        if (File.Exists(targetFilePath))
+        if (File.Exists(file.AbsolutePath))
         {
             if (file.IsImage)
             {
-                double similarity = 0d;
-                
-                try
-                {
-                    // Hash algorithm might crash when source file is not flawless
-                    var hashAlgorithm = new AverageHash();
-                    using var sourceStream = File.OpenRead(file.AbsolutePath);
-                    using var targetStream = File.OpenRead(targetFilePath);
-                    var sourceHash = hashAlgorithm.Hash(sourceStream);
-                    var targetHash = hashAlgorithm.Hash(targetStream);
-                    similarity = CompareHash.Similarity(sourceHash, targetHash);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
-                }
-                
+                CompareImagesInteractor compareImages = new();
+                double similarity = compareImages.Perform(file, targetFile);
+
                 if (99.9 > similarity)
                 {
                     // seems like a different file. Add a random suffix to avoid collision.
@@ -81,9 +62,9 @@ public class MediaDir(string path)
             }
         }
 
-        File.Copy(file.AbsolutePath, targetFilePath);
+        File.Copy(file.AbsolutePath, targetFile.AbsolutePath);
 
-        return Result.Success($"[green]File successfully copied to {targetFilePath}[/]");
+        return Result.Success($"[green]File successfully copied to {targetFile.AbsolutePath}[/]");
     }
 
     private static IEnumerable<MediaDir> FindDirectories(string absolutePath)
@@ -137,7 +118,4 @@ public class MediaDir(string path)
 
         return findings;
     }
-
-    public override string ToString()
-        => AbsolutePath;
 }
