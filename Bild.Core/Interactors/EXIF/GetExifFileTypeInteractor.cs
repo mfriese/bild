@@ -9,6 +9,6 @@ public class GetExifFileTypeInteractor
     {
         using var stream = new FileStream(file.AbsolutePath, FileMode.Open, FileAccess.Read);
 
-        return FileTypeDetector.DetectFileType(stream);
+        return FileTypeDetector.DetectFileType(stream, file.AbsolutePath);
     }
 }

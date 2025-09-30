@@ -63,6 +63,10 @@ public class ExifTests
     [InlineData("pic_01.jpg", "jpg")]
     [InlineData("vid_01.mov", "mov")]
     [InlineData("vid_02.mp4", "mp4")]
+    [InlineData("pic_02.arw", "arw")]
+    [InlineData("pic_03.jpg", "jpg")]
+    [InlineData("vid_03.avi", "avi")]
+    [InlineData("vid_04.mp4", "mp4")]
     public void Test_FileExtensionFlag(string fileName, string extension)
     {
         GetCurrentPathInteractor getCurrentPath = new();
@@ -80,6 +84,10 @@ public class ExifTests
     [InlineData("pic_01.jpg", "jpg")]
     [InlineData("vid_01.mov", "mov")]
     [InlineData("vid_02.mp4", "mp4")]
+    [InlineData("pic_02.arw", "arw")]
+    [InlineData("pic_03.jpg", "jpg")]
+    [InlineData("vid_03.avi", "avi")]
+    [InlineData("vid_04.mp4", "mp4")]
     public void Test_ExifFileTypeScanner(string fileName, string extension)
     {
         GetCurrentPathInteractor getCurrentPath = new();
