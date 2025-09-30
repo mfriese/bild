@@ -17,16 +17,17 @@ public class GetCreationDateInteractor
             {
                 case FileType.Jpeg:
                 case FileType.Cr2:
+                case FileType.Arw:
                 case FileType.Avi:
-                    GetExifIFDCreateDateInteractor getJpgCreationDate = new();
-                    return getJpgCreationDate.Perform(file);
+                    GetExifIFDCreateDateSecInteractor getExifIFDCreateDate = new();
+                    return getExifIFDCreateDate.Perform(file);
                 case FileType.Mp4:
                 case FileType.QuickTime:
                     GetQuickTimeCreateDateSecInteractor getMp4CreationDate = new();
                     return getMp4CreationDate.Perform(file);
                 default:
-                    Console.WriteLine("Cannot identify");
-                    return null;
+                    GetSystemFileModifyDateInteractor getSystemFileModifyDate = new();
+                    return getSystemFileModifyDate.Perform(file);
             }
         }
         catch (Exception)

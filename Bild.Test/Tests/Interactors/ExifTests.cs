@@ -100,4 +100,25 @@ public class ExifTests
 
         Assert.True(fileExtension.GetAllExtensions()?.Contains(extension) ?? false);
     }
+
+    [Theory]
+    [InlineData("pic_01.jpg")]
+    [InlineData("vid_01.mov")]
+    [InlineData("vid_02.mp4")]
+    [InlineData("pic_02.arw")]
+    [InlineData("pic_03.jpg")]
+    [InlineData("vid_03.avi")]
+    [InlineData("vid_04.mp4")]
+    public void Test_Date_Scanner_All_Files(string fileName)
+    {
+        GetCurrentPathInteractor getCurrentPath = new();
+        var path = getCurrentPath.Perform();
+
+        MediaFile file = new(Path.Combine(path, "Samples", fileName));
+
+        GetCreationDateInteractor getCreationDateInteractor = new();
+        var creationDate = getCreationDateInteractor.Perform(file);
+
+        Assert.NotNull(creationDate);
+    }
 }

@@ -2,12 +2,12 @@
 
 namespace Bild.Core.Interactors.ExifFlags;
 
-public class GetQuickTimeCreateDateSecInteractor
+public class GetExifIFDCreateDateSecInteractor
 {
     public DateTime? Perform(MediaFile file)
     {
-        GetQuickTimeCreateDateInteractor getQuickTimeCreateDate = new();
-        DateTime? createDate = getQuickTimeCreateDate.Perform(file);
+        GetExifIFDCreateDateInteractor getExifIFDCreateDateInteractor = new();
+        DateTime? createDate = getExifIFDCreateDateInteractor.Perform(file);
 
         GetSystemFileModifyDateInteractor getSystemFileModifyDate = new();
         DateTime? modifyDate = getSystemFileModifyDate.Perform(file);
