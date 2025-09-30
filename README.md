@@ -13,5 +13,3 @@ application by some provider anymore I have created this program.
 ## Ideas I follow
 - Organize by year
 - Organize by media type (audio, video, picture and text)
-- Don't integrate a viewer (so far), let the OS handle this
-- Add search feature
