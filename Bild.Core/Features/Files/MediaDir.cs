@@ -37,7 +37,7 @@ public class MediaDir(string path)
 
         var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilename));
 
-        if (File.Exists(file.AbsolutePath))
+        if (File.Exists(targetFile.AbsolutePath))
         {
             if (file.IsImage)
             {
@@ -52,13 +52,13 @@ public class MediaDir(string path)
                 else
                 {
                     // Similarity is 100% so it is the same file
-                    return Result.Success($"[green]Similar file already exists, skipping.[/]");
+                    return Result.Success($"[green]Similar file (factor '{similarity}') already exists, skipping.[/]");
                 }
             }
             else
             {
                 // Video cannot be compared this way
-                return Result.Failure<string>($"[yellow]Video target file already exists.[/]");
+                return Result.Failure<string>($"[yellow]Video target file '{targetFile}' already exists.[/]");
             }
         }
 
@@ -108,7 +108,11 @@ public class MediaDir(string path)
             {
                 findings = Directory.
                     EnumerateFiles(absolutePath).
-                    Select(f => new MediaFile(f));
+                    Select(f =>
+                    {
+                        Console.Write(".");
+                        return new MediaFile(f);
+                    });
             }
             catch (UnauthorizedAccessException)
             {
@@ -118,4 +122,6 @@ public class MediaDir(string path)
 
         return findings;
     }
+
+    public override string ToString() => AbsolutePath;
 }

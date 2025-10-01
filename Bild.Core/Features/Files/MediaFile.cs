@@ -53,7 +53,10 @@ public class MediaFile(string path)
         FileType.QuickTime,
         FileType.Jpeg,
         FileType.Mp4,
+        FileType.Arw,
         FileType.Cr2,
         FileType.Avi
     ];
+
+    public override string ToString() => AbsolutePath;
 }

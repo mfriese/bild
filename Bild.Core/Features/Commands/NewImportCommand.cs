@@ -37,7 +37,10 @@ internal class NewImportCommand : Command<NewImportSettings>
         if (!AnsiConsole.Prompt(new ConfirmationPrompt($"Continue?")))
             return 1;
 
+        AnsiConsole.MarkupLine("");
+        AnsiConsole.Markup(Markup.Escape("Collecting ["));
         var scannedFiles = Finder.FindFiles(sourcePath).ToList();
+        AnsiConsole.MarkupLine(Markup.Escape("]"));
 
         var acceptedFiles = new List<MediaFile>();
 
@@ -130,7 +133,7 @@ internal class NewImportCommand : Command<NewImportSettings>
             AnsiConsole.MarkupLine($"[red]App has crashed![/].");
             Console.WriteLine(e.Message);
             Console.WriteLine(e.StackTrace);
-            
+
             WaitKeyPressInteractor waitCrashKeyPress = new();
             return waitCrashKeyPress.Perform(1);
         }
@@ -150,7 +153,9 @@ internal class NewImportCommand : Command<NewImportSettings>
             return Result.Failure<string>($"[red]Cannot find EXIF data.[/]");
         }
 
-        var targetSubDir = target.GetOrCreateSubdirectory(year).GetOrCreateSubdirectory(month);
+        var targetSubDir = target.
+            GetOrCreateSubdirectory(year).
+            GetOrCreateSubdirectory(month);
 
         return targetSubDir.Insert(file);
     }
