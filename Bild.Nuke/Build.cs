@@ -1,7 +1,8 @@
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
-using System.IO;
+using System;
+using System.Linq;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 class Build : NukeBuild
@@ -18,11 +19,19 @@ class Build : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            Directory.Delete(ProjectDir / "bin", true);
-            Directory.Delete(ProjectDir / "obj", true);
+            Print("Deleting old binaries ...");
+
+            RootDirectory
+                .GlobDirectories("**/{bin,obj}")
+                .Where(absPath => !$"{absPath}".Contains("Nuke"))
+                .Select(absPath => Print(absPath, ConsoleColor.Magenta))
+                .DeleteDirectories();
+
+            Print("... cleanup complete!");
         });
 
     Target Restore => _ => _
+        .After(Clean)
         .Executes(() =>
         {
             DotNetRestore(s => s
@@ -30,7 +39,7 @@ class Build : NukeBuild
         });
 
     Target Compile => _ => _
-        .DependsOn(Restore)
+        .DependsOn(Restore, Clean)
         .Executes(() =>
         {
             DotNetBuild(s => s
@@ -40,4 +49,22 @@ class Build : NukeBuild
                 .EnableNoRestore());
         });
 
+    private static T Print<T>(T thing, ConsoleColor color = ConsoleColor.Red)
+    {
+        // aktuelle Farbe sichern
+        var oldColor = Console.ForegroundColor;
+
+        try
+        {
+            Console.ForegroundColor = color;
+
+            Console.WriteLine($"{thing}");
+        }
+        finally
+        {
+            Console.ForegroundColor = oldColor;
+        }
+
+        return thing;
+    }
 }
