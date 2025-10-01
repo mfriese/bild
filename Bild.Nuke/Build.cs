@@ -49,6 +49,26 @@ class Build : NukeBuild
                 .EnableNoRestore());
         });
 
+    Target Test =>
+        _ =>
+            _.DependsOn(Compile)
+                .Executes(() =>
+                {
+                    string[] testProjects = ["Bild.Test"];
+
+                    foreach (string testPath in testProjects)
+                    {
+                        AbsolutePath testProject = RootDirectory / testPath / $"{testPath}.csproj";
+
+                        DotNetTest(s =>
+                            s.SetProjectFile(testProject)
+                                .SetConfiguration(Configuration)
+                                .SetLoggers("trx")
+                        //.SetResultsDirectory("TestResults")
+                        );
+                    }
+                });
+
     private static T Print<T>(T thing, ConsoleColor color = ConsoleColor.Red)
     {
         // aktuelle Farbe sichern
