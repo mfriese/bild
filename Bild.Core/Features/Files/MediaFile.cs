@@ -9,8 +9,14 @@ public class MediaFile(string path)
 {
     private ICollection<KeyValuePair<string, string>> exif;
     public ICollection<KeyValuePair<string, string>> Exif
-        => exif ??= new ExifTool().ExtractAllMetadata(AbsolutePath);
+        => exif ??= ExtractAll(AbsolutePath);
 
+    private ICollection<KeyValuePair<string, string>> ExtractAll(string absPath)
+    {
+        using var exiftool = new ExifTool();
+        return exiftool.ExtractAllMetadata(absPath);
+    }
+    
     public string AbsolutePath { get; } = Path.GetFullPath(path);
 
     public string Extension => Path.GetExtension(AbsolutePath);
