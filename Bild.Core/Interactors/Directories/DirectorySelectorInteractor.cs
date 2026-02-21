@@ -55,6 +55,6 @@ public class DirectorySelectorInteractor
             return directory;
         }
 
-        return directory.Dirs.First(dd => dd.ToString() == selected);
+        return Perform(directory.Dirs.First(dd => dd.ToString() == selected));
     }
 }

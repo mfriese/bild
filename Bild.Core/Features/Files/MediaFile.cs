@@ -8,7 +8,7 @@ namespace Bild.Core.Features.Files;
 public class MediaFile(string path)
 {
     public bool Exists
-        => string.IsNullOrEmpty(path) && File.Exists(AbsolutePath);
+        => !string.IsNullOrEmpty(path) && File.Exists(AbsolutePath);
     
     private string AbsolutePath { get; } = Path.GetFullPath(path);
     
@@ -44,7 +44,16 @@ public class MediaFile(string path)
 
     public void Copy(MediaFile source)
     {
-        File.Copy(source.AbsolutePath, AbsolutePath);
+        try
+        {
+            File.Copy(source.AbsolutePath, AbsolutePath, false);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            Console.WriteLine($"Source: {source.AbsolutePath}");
+            Console.WriteLine($"Target: {AbsolutePath}");
+        }
     }
 
     public void Delete()
@@ -62,6 +71,12 @@ public class MediaFile(string path)
     
     private FileType? GetExifFileType()
     {
+        var fileInfo = new FileInfo(AbsolutePath);
+        
+        // do not use files smaller than 64kb
+        if (fileInfo.Length < 1024 * 64)
+            return FileType.Unknown;
+        
         using var stream = new FileStream(AbsolutePath, FileMode.Open, FileAccess.Read);
 
         return FileTypeDetector.DetectFileType(stream, AbsolutePath);
