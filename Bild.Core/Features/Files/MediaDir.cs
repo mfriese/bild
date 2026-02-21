@@ -5,13 +5,17 @@ namespace Bild.Core.Features.Files;
 
 public class MediaDir(string path)
 {
-    public string AbsolutePath { get; } = Path.GetFullPath(path);
+    public bool Exists
+        => !string.IsNullOrEmpty(path) && Directory.Exists(AbsolutePath);
+    
+    private string AbsolutePath
+        => Path.GetFullPath(path);
 
     public IEnumerable<MediaDir> Dirs
-        => FindDirectories(AbsolutePath);
+        => FindDirectories(this);
 
     public IEnumerable<MediaFile> Files
-        => FindFiles(AbsolutePath);
+        => FindFiles(this);
 
     public MediaDir GetOrCreateSubdirectory(string subDir)
     {
@@ -25,29 +29,30 @@ public class MediaDir(string path)
         return new MediaDir(subDirPath);
     }
 
-    public Result<string> Insert(MediaFile file, bool randomSuffix = false)
+    public Result<string> Insert(MediaFile sourceFile)
     {
         GetExifFilenameInteractor getExifFilename = new();
-        var targetFilename = getExifFilename.Perform(file, randomSuffix);
+        var targetFilenameWithSuffix = getExifFilename.Perform(sourceFile, true);
+        var targetFilenameNoSuffix = getExifFilename.Perform(sourceFile, false);
 
-        if (targetFilename is null)
+        if (targetFilenameNoSuffix is null)
         {
             return Result.Failure<string>($"[red]Cannot determine target filename![/]");
         }
 
-        var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilename));
+        var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilenameNoSuffix));
 
-        if (File.Exists(targetFile.AbsolutePath))
+        if (targetFile.Exists)
         {
-            if (file.IsImage)
+            if (sourceFile.IsImage)
             {
                 CompareImagesInteractor compareImages = new();
-                double similarity = compareImages.Perform(file, targetFile);
+                double similarity = compareImages.Perform(sourceFile, targetFile);
 
                 if (99.9 > similarity)
                 {
                     // seems like a different file. Add a random suffix to avoid collision.
-                    return Insert(file, true);
+                    targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilenameWithSuffix));
                 }
                 else
                 {
@@ -57,21 +62,22 @@ public class MediaDir(string path)
             }
             else
             {
-                // Video cannot be compared this way
-                return Result.Failure<string>($"[yellow]Video target file '{targetFile}' already exists.[/]");
+                // Video cannot be compared this way, but it's already there. With videos we assume
+                // automatically it's the same. No need to copy.
+                return Result.Success($"[yellow]Video target file '{targetFile}' already exists.[/]");
             }
         }
 
-        File.Copy(file.AbsolutePath, targetFile.AbsolutePath);
+        targetFile.Copy(sourceFile);
 
-        return Result.Success($"[green]File successfully copied to {targetFile.AbsolutePath}[/]");
+        return Result.Success($"[green]File successfully copied to {targetFile}[/]");
     }
 
-    private static IEnumerable<MediaDir> FindDirectories(string absolutePath)
+    private static IEnumerable<MediaDir> FindDirectories(MediaDir directory)
     {
         IEnumerable<MediaDir> findings;
 
-        if (!Directory.Exists(absolutePath))
+        if (!directory.Exists)
         {
             findings = [];
         }
@@ -80,7 +86,7 @@ public class MediaDir(string path)
             try
             {
                 findings = Directory.
-                    EnumerateDirectories(absolutePath).
+                    EnumerateDirectories(directory.AbsolutePath).
                     Where(d => d != "." && d != "..").
                     Select(d => new MediaDir(d));
             }
@@ -93,11 +99,11 @@ public class MediaDir(string path)
         return findings;
     }
 
-    private static IEnumerable<MediaFile> FindFiles(string absolutePath)
+    private static IEnumerable<MediaFile> FindFiles(MediaDir directory)
     {
         IEnumerable<MediaFile> findings;
 
-        if (!Directory.Exists(absolutePath))
+        if (!directory.Exists)
         {
             // No findings, folder does not exist
             findings = [];
@@ -107,7 +113,7 @@ public class MediaDir(string path)
             try
             {
                 findings = Directory.
-                    EnumerateFiles(absolutePath).
+                    EnumerateFiles(directory.AbsolutePath).
                     Select(f =>
                     {
                         Console.Write(".");

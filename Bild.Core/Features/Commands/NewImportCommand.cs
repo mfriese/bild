@@ -1,5 +1,4 @@
 ﻿using Bild.Core.Features.Files;
-using Bild.Core.Features.Importer;
 using Bild.Core.Interactors.Directories;
 using Bild.Core.Interactors.Settings;
 using Bild.Core.Interactors.UI;
@@ -9,28 +8,30 @@ using Spectre.Console.Cli;
 
 namespace Bild.Core.Features.Commands;
 
-internal class NewImportCommand : Command<NewImportSettings>
+internal class NewImportCommand : Command<Cli>
 {
     public static string Name => "Copy from SOURCE to LIBRARY";
 
-    public override int Execute(CommandContext context, NewImportSettings settings)
+    public override int Execute(CommandContext context, Cli _)
     {
         AnsiConsole.MarkupLine("Will copy all files from source to target folder.");
         AnsiConsole.MarkupLine("Please select a [red]source folder[/] first!");
         AnsiConsole.MarkupLine("");
 
         PathSelectorInteractor pathSelector = new();
-        var sourcePath = pathSelector.Perform();
+        var sourceDirectory = pathSelector.Perform();
 
-        if (string.IsNullOrEmpty(sourcePath))
+        if (!sourceDirectory.Exists)
             return 1;
 
-        GetLibraryPathInteractor getLibraryPath = new();
-        var targetPath = getLibraryPath.Perform(settings);
+        LoadConfigurationInteractor loadConfiguration = new();
+        var configuration = loadConfiguration.Perform();
 
+        var targetDirectory = new MediaDir(configuration.PhotosDir);
+        
         var tree = new Tree($"[yellow]Import settings[/]");
-        tree.AddNode($"Source: [bold]{sourcePath}[/]");
-        tree.AddNode($"Target: [bold]{targetPath}[/]");
+        tree.AddNode($"Source: [bold]{sourceDirectory}[/]");
+        tree.AddNode($"Target: [bold]{targetDirectory}[/]");
         AnsiConsole.Write(tree);
         AnsiConsole.MarkupLine("");
 
@@ -39,7 +40,7 @@ internal class NewImportCommand : Command<NewImportSettings>
 
         AnsiConsole.MarkupLine("");
         AnsiConsole.Markup(Markup.Escape("Collecting ["));
-        var scannedFiles = Finder.FindFiles(sourcePath).ToList();
+        var scannedFiles = sourceDirectory.FindFilesRecursive().ToList();
         AnsiConsole.MarkupLine(Markup.Escape("]"));
 
         var acceptedFiles = new List<MediaFile>();
@@ -50,8 +51,8 @@ internal class NewImportCommand : Command<NewImportSettings>
         progressIndicator.Start(ctx =>
         {
             var task = ctx.AddTask(
-                $"[green]Scanning {scannedFiles.Count} files[/]",
-                maxValue: scannedFiles.Count);
+                $"[green]Scanning {scannedFiles.Count()} files[/]",
+                maxValue: scannedFiles.Count());
 
             acceptedFiles.AddRange(scannedFiles.Where(ff =>
             {
@@ -62,9 +63,9 @@ internal class NewImportCommand : Command<NewImportSettings>
 
         scannedFiles.RemoveAll(acceptedFiles.Contains);
 
-        foreach (var file in scannedFiles)
+        foreach (var scannedFile in scannedFiles)
         {
-            AnsiConsole.MarkupLine($"Removed [yellow]{file.AbsolutePath}[/].");
+            AnsiConsole.MarkupLine($"Removed [yellow]{scannedFile}[/].");
         }
 
         AnsiConsole.MarkupLine($"Working with [yellow]{acceptedFiles.Count}[/] files.");
@@ -76,13 +77,15 @@ internal class NewImportCommand : Command<NewImportSettings>
         int counter = 0;
         int delete = 1; // 0 = never, 1 = no, 2 = yes, 3 = always
 
+        MediaDir targetDir = new MediaDir(configuration.PhotosDir);
+        
         try
         {
-            foreach (var file in acceptedFiles)
+            foreach (var acceptedFile in acceptedFiles)
             {
-                var result = CopyFile(file, targetPath);
+                var result = CopyFile(acceptedFile, targetDir);
 
-                var resultTree = new Tree(file.AbsolutePath);
+                var resultTree = new Tree(acceptedFile.ToString());
 
                 if (result.IsSuccess)
                 {
@@ -121,9 +124,9 @@ internal class NewImportCommand : Command<NewImportSettings>
 
                 if (delete is 2 or 3)
                 {
-                    File.Delete(file.AbsolutePath);
+                    acceptedFile.Delete();
 
-                    AnsiConsole.MarkupLine($"Deleted [yellow]{file.AbsolutePath}[/].");
+                    AnsiConsole.MarkupLine($"Deleted [yellow]{acceptedFile}[/].");
                     AnsiConsole.MarkupLine($"");
                 }
             }

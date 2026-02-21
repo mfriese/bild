@@ -7,9 +7,14 @@ namespace Bild.Core.Features.Files;
 
 public class MediaFile(string path)
 {
-    private ICollection<KeyValuePair<string, string>> exif;
+    public bool Exists
+        => string.IsNullOrEmpty(path) && File.Exists(AbsolutePath);
+    
+    private string AbsolutePath { get; } = Path.GetFullPath(path);
+    
+    private ICollection<KeyValuePair<string, string>> _exif;
     public ICollection<KeyValuePair<string, string>> Exif
-        => exif ??= ExtractAll(AbsolutePath);
+        => _exif ??= ExtractAll(AbsolutePath);
 
     private ICollection<KeyValuePair<string, string>> ExtractAll(string absPath)
     {
@@ -17,31 +22,51 @@ public class MediaFile(string path)
         return exiftool.ExtractAllMetadata(absPath);
     }
     
-    public string AbsolutePath { get; } = Path.GetFullPath(path);
-
     public string Extension => Path.GetExtension(AbsolutePath);
 
-    public FileType? exifFileType;
-    public FileType? ExifFileType => exifFileType ??= GetExifFileType();
+    private FileType? _exifFileType;
+    public FileType? ExifFileType
+        => _exifFileType ??= GetExifFileType();
 
-    private DateTime? exifCreationDate;
-    public DateTime? ExifCreationDate => exifCreationDate ??= GetExifCreationDate();
+    private DateTime? _exifCreationDate;
+    public DateTime? ExifCreationDate
+        => _exifCreationDate ??= GetExifCreationDate();
 
-    public string exifFileNameExtension;
-    public string ExifFileNameExtension => exifFileNameExtension ??= GetExifFileNameExtension();
+    private string _exifFileNameExtension;
+    public string ExifFileNameExtension
+        => _exifFileNameExtension ??= GetExifFileNameExtension();
 
     public bool IsAccepted
         => AcceptedTypes.Contains(GetExifFileType() ?? FileType.Unknown);
 
-    private FileType? GetExifFileType()
+    public bool IsImage
+        => ExifFileType is FileType.Jpeg or FileType.Arw or FileType.Cr2;
+
+    public void Copy(MediaFile source)
     {
-        GetExifFileTypeInteractor getExifFileType = new();
-        return getExifFileType.Perform(this);
+        File.Copy(source.AbsolutePath, AbsolutePath);
     }
 
-    public bool IsImage
-        => ExifFileType == FileType.Jpeg;
+    public void Delete()
+    {
+        File.Delete(AbsolutePath);
+    }
 
+    public Stream ReadAsStream()
+    {
+        if (!Exists)
+            return new MemoryStream();
+        
+        return File.OpenRead(AbsolutePath);
+    }
+    
+    private FileType? GetExifFileType()
+    {
+        using var stream = new FileStream(AbsolutePath, FileMode.Open, FileAccess.Read);
+
+        return FileTypeDetector.DetectFileType(stream, AbsolutePath);
+    }
+    
     private DateTime? GetExifCreationDate()
     {
         GetCreationDateInteractor getCreationDate = new();
@@ -54,7 +79,7 @@ public class MediaFile(string path)
         return getFileNameExtension.Perform(this);
     }
 
-    public static FileType[] AcceptedTypes =>
+    private static FileType[] AcceptedTypes =>
     [
         FileType.QuickTime,
         FileType.Jpeg,

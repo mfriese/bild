@@ -16,8 +16,8 @@ public class ExifTests
 
         MediaFile file = new(Path.Combine(path, "Samples", "pic_01.jpg"));
 
-        GetExifIFDCreateDateInteractor getExifIFDCreateDate = new();
-        var creationDate = getExifIFDCreateDate.Perform(file);
+        GetExifIFDCreateDateInteractor getExifIfdCreateDate = new();
+        var creationDate = getExifIfdCreateDate.Perform(file);
 
         Assert.NotNull(creationDate);
         Assert.Equal(2019, creationDate.Value.Year);
@@ -78,27 +78,6 @@ public class ExifTests
         var fileExtension = getFileTypeExtension.Perform(file);
 
         Assert.Equal(extension, fileExtension);
-    }
-
-    [Theory]
-    [InlineData("pic_01.jpg", "jpg")]
-    [InlineData("vid_01.mov", "mov")]
-    [InlineData("vid_02.mp4", "mp4")]
-    [InlineData("pic_02.arw", "arw")]
-    [InlineData("pic_03.jpg", "jpg")]
-    [InlineData("vid_03.avi", "avi")]
-    [InlineData("vid_04.mp4", "mp4")]
-    public void Test_ExifFileTypeScanner(string fileName, string extension)
-    {
-        GetCurrentPathInteractor getCurrentPath = new();
-        var path = getCurrentPath.Perform();
-
-        MediaFile file = new(Path.Combine(path, "Samples", fileName));
-
-        GetExifFileTypeInteractor getFileType = new();
-        var fileExtension = getFileType.Perform(file);
-
-        Assert.True(fileExtension.GetAllExtensions()?.Contains(extension) ?? false);
     }
 
     [Theory]

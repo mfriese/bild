@@ -1,3 +1,4 @@
+using Bild.Core.Features.Files;
 using Bild.Core.Interactors.UI;
 using Spectre.Console;
 
@@ -8,24 +9,20 @@ public class DirectorySelectorInteractor
     private const string Cancel = "[red]Cancel[/]";
     private const string Accept = "[green]Accept[/]";
 
-    public string Perform(string rootPath)
+    public MediaDir Perform(MediaDir directory)
     {
-        if (!Directory.Exists(rootPath))
+        if (!directory.Exists)
         {
-            AnsiConsole.MarkupLine($"[red]Selected path '{rootPath}' does not exist![/]");
+            AnsiConsole.MarkupLine($"[red]Selected path '{directory}' does not exist![/]");
 
-            return string.Empty;
+            return directory;
         }
 
         List<string> directories = [];
 
         try
         {
-            directories = Directory.
-                GetDirectories(rootPath).
-                Select(Path.GetFileName).
-                Order().
-                ToList();
+            directories = directory.Dirs.Select(md => md.ToString()).Order().ToList();
         }
         catch (Exception exp)
         {
@@ -33,7 +30,7 @@ public class DirectorySelectorInteractor
             AnsiConsole.WriteLine($"\r\n-> {exp.Message}\r\n");
 
             WaitKeyPressInteractor waitKeyPress = new();
-            return waitKeyPress.Perform(string.Empty);
+            return waitKeyPress.Perform(directory);
         }
 
         directories.Add(Accept);
@@ -41,7 +38,7 @@ public class DirectorySelectorInteractor
 
         var selected = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title($"Pick a subfolder of {rootPath} and {Accept} or {Cancel}.")
+                .Title($"Pick a subfolder of {directory} and {Accept} or {Cancel}.")
                 .PageSize(16)
                 .EnableSearch()
                 .MoreChoicesText($"[grey](Navigate with arrow keys. Pick {Accept} or {Cancel} from the bottom)[/]")
@@ -50,15 +47,14 @@ public class DirectorySelectorInteractor
 
         if (selected == Cancel)
         {
-            return string.Empty;
+            return new MediaDir(string.Empty);
         }
 
         if (selected == Accept)
         {
-            return rootPath;
+            return directory;
         }
 
-        return Perform(Path.Combine(rootPath, selected));
+        return directory.Dirs.First(dd => dd.ToString() == selected);
     }
-
 }

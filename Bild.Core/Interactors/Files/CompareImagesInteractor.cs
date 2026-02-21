@@ -10,9 +10,9 @@ public class CompareImagesInteractor
         try
         {
             var hashAlgorithm = new AverageHash();
-            using var sourceStream = File.OpenRead(first.AbsolutePath);
+            using var sourceStream = first.ReadAsStream();
             var sourceHash = hashAlgorithm.Hash(sourceStream);
-            using var targetStream = File.OpenRead(second.AbsolutePath);
+            using var targetStream = second.ReadAsStream();
             var targetHash = hashAlgorithm.Hash(targetStream);
             return CompareHash.Similarity(sourceHash, targetHash);
         }

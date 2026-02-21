@@ -10,8 +10,7 @@ public class GetCreationDateInteractor
     {
         try
         {
-            GetExifFileTypeInteractor getExifFileType = new();
-            var fileType = getExifFileType.Perform(file);
+            var fileType = file.Exists ? file.ExifFileType : FileType.Unknown;
 
             switch (fileType)
             {
@@ -19,8 +18,8 @@ public class GetCreationDateInteractor
                 case FileType.Cr2:
                 case FileType.Arw:
                 case FileType.Avi:
-                    GetExifIFDCreateDateSecInteractor getExifIFDCreateDate = new();
-                    return getExifIFDCreateDate.Perform(file);
+                    GetExifIFDCreateDateSecInteractor getExifIfdCreateDate = new();
+                    return getExifIfdCreateDate.Perform(file);
                 case FileType.Mp4:
                 case FileType.QuickTime:
                     GetQuickTimeCreateDateSecInteractor getMp4CreationDate = new();

@@ -1,21 +1,23 @@
-﻿namespace Bild.Core.Interactors.Directories;
+﻿using Bild.Core.Features.Files;
+
+namespace Bild.Core.Interactors.Directories;
 
 public class PathSelectorInteractor
 {
-    public string Perform(string defaultDir = "")
+    public MediaDir Perform(string defaultDir = "")
     {
-        if (string.IsNullOrEmpty(defaultDir))
+        var workingDir = new MediaDir(defaultDir);
+        
+        if (!workingDir.Exists)
         {
             DriveSelectorInteractor driveSelector = new();
-            defaultDir = driveSelector.Perform();
+            workingDir = driveSelector.Perform();
 
-            if (string.IsNullOrEmpty(defaultDir))
-                return string.Empty;
+            if (!workingDir.Exists)
+                return workingDir;
         }
 
         DirectorySelectorInteractor directorySelector = new();
-        var selectedDir = directorySelector.Perform(defaultDir);
-
-        return selectedDir;
+        return directorySelector.Perform(workingDir);
     }
 }

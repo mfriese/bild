@@ -1,3 +1,4 @@
+using Bild.Core.Features.Files;
 using Spectre.Console;
 
 namespace Bild.Core.Interactors.Directories;
@@ -6,7 +7,7 @@ public class DriveSelectorInteractor
 {
     private const string Cancel = "[red]Cancel[/]";
 
-    public string Perform()
+    public MediaDir Perform()
     {
         var drives = DriveInfo.GetDrives()
             .Where(d =>
@@ -29,7 +30,7 @@ public class DriveSelectorInteractor
         {
             AnsiConsole.MarkupLine("[red]No drives were found![/]");
 
-            return string.Empty;
+            return new MediaDir(string.Empty);
         }
 
         drives.Add(Cancel);
@@ -44,9 +45,9 @@ public class DriveSelectorInteractor
 
         if (selected == Cancel)
         {
-            return string.Empty;
+            return new MediaDir(string.Empty);
         }
 
-        return selected;
+        return new MediaDir(selected);
     }
 }

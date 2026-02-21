@@ -7,12 +7,12 @@ public class GetQuickTimeCreateDateSecInteractor
     public DateTime? Perform(MediaFile file)
     {
         GetQuickTimeCreateDateInteractor getQuickTimeCreateDate = new();
-        DateTime? createDate = getQuickTimeCreateDate.Perform(file);
+        var createDate = getQuickTimeCreateDate.Perform(file);
 
         GetSystemFileModifyDateInteractor getSystemFileModifyDate = new();
-        DateTime? modifyDate = getSystemFileModifyDate.Perform(file);
+        var modifyDate = getSystemFileModifyDate.Perform(file);
 
-        // if within one year time range I supposed the dates a okay
+        // if within one year time range I supposed the dates are okay
         if (createDate != null && modifyDate != null)
         {
             if (createDate.Value.AddYears(1) > modifyDate &&
@@ -22,12 +22,6 @@ public class GetQuickTimeCreateDateSecInteractor
             }
         }
 
-        // if quicktime create date is missing just use modified date - seems more robust
-        if (modifyDate != null)
-        {
-            return modifyDate;
-        }
-
-        return null;
+        return modifyDate;
     }
 }

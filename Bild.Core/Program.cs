@@ -18,7 +18,7 @@ public class Program
             config.AddCommand<NewImportCommand>(NewImportCommand.Name);
             config.AddCommand<ConfigureCommand>(ConfigureCommand.Name);
         });
-
+        
         return app;
     }
 
@@ -59,10 +59,7 @@ public class Program
             }
             else
             {
-                LoadBaseSettingsInteractor loadBaseSettings = new();
-                var cfg = loadBaseSettings.Perform();
-
-                app.Run(cfg.Args().Prepend(selected));
+                app.Run([selected]);
             }
         }
     }

@@ -1,18 +1,19 @@
-﻿using Bild.Core.Interactors.Directories;
+﻿using Bild.Core.Features.Files;
+using Bild.Core.Interactors.Directories;
 using Bild.Core.Interactors.Settings;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace Bild.Core.Features.Commands;
 
-public class ConfigureCommand : Command<ConfigureSettings>
+public class ConfigureCommand : Command<Cli>
 {
     public static string Name => "[yellow]Configure App Defaults[/]";
 
-    public override int Execute(CommandContext context, ConfigureSettings settings)
+    public override int Execute(CommandContext context, Cli _)
     {
-        LoadBaseSettingsInteractor loadBaseSettings = new();
-        var baseSettings = loadBaseSettings.Perform();
+        LoadConfigurationInteractor loadConfiguration = new();
+        var settings = loadConfiguration.Perform();
 
         var table = new Table()
             .Border(TableBorder.Rounded)
@@ -20,7 +21,7 @@ public class ConfigureCommand : Command<ConfigureSettings>
             .BorderColor(Color.Grey)
             .AddColumn("[cyan]Variable[/]")
             .AddColumn("[grey]Current Value[/]")
-            .AddRow([nameof(baseSettings.PhotosDir), baseSettings.PhotosDir]);
+            .AddRow([nameof(settings.PhotosDir), settings.PhotosDir]);
 
         AnsiConsole.Write(table);
 
@@ -28,23 +29,23 @@ public class ConfigureCommand : Command<ConfigureSettings>
             return 0;
 
         AnsiConsole.MarkupLine("\r\nWhere is your photos library?");
-        baseSettings.PhotosDir = PickDirectory(baseSettings.PhotosDir);
-
-        SaveBaseSettingsInteractor saveBaseSettings = new();
-        saveBaseSettings.Perform(baseSettings);
+        settings.PhotosDir = $"{PickDirectory(new MediaDir(settings.PhotosDir))}";      
+        
+        SaveConfigurationInteractor saveConfiguration = new();
+        saveConfiguration.Perform(settings);
 
         return 0;
     }
 
-    private string PickDirectory(string defaultValue)
+    private MediaDir PickDirectory(MediaDir directory)
     {
-        if (!string.IsNullOrEmpty(defaultValue))
+        if (!directory.Exists)
         {
             var prompt = new ConfirmationPrompt($"Current selection: [red]" +
-                $"{defaultValue}[/]. Keep this value?");
+                $"{directory}[/]. Keep this value?");
 
             if (AnsiConsole.Prompt(prompt))
-                return defaultValue;
+                return directory;
         }
 
         PathSelectorInteractor pathSelector = new();

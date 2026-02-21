@@ -1,6 +1,6 @@
 ﻿namespace Bild.Core.Interactors.Settings;
 
-public class GetSettingsPathInteractor
+public class GetConfigurationPathInteractor
 {
     public string Perform()
     {
