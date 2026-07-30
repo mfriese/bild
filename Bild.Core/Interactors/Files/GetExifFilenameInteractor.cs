@@ -4,27 +4,25 @@ namespace Bild.Core.Interactors.Files;
 
 public class GetExifFilenameInteractor
 {
-    public string Perform(MediaFile file, bool randomSuffix = false)
+    public string Perform(MediaFile file, int collisionIndex = 0)
     {
-        string suffix = string.Empty;
+        var extension = file.ExifFileNameExtension;
 
-        if (randomSuffix)
-        {
-            suffix = $"_{GenerateRandomString(4)}";
-        }
+        if (string.IsNullOrWhiteSpace(extension))
+            extension = file.Extension;
 
-        if (file.ExifCreationDate?.ToString("yyyyMMdd_hhmmss") is string date)
-            return $"img_{date}{suffix}.{file.ExifFileNameExtension ?? file.Extension}";
-        return null;
+        return Perform(file.ExifCreationDate, extension, collisionIndex);
     }
 
-    static string GenerateRandomString(int length)
+    public string Perform(DateTime? creationDate, string extension, int collisionIndex = 0)
     {
-        const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random(DateTime.Now.Millisecond);
+        if (creationDate is null || string.IsNullOrWhiteSpace(extension) || collisionIndex < 0)
+            return null;
 
-        return new string(Enumerable.Repeat(chars, length)
-            .Select(s => s[random.Next(s.Length)])
-            .ToArray());
+        var suffix = collisionIndex == 0 ? string.Empty : $"_{collisionIndex:D2}";
+        var normalizedExtension = extension.TrimStart('.');
+        var date = creationDate.Value.ToString("yyyyMMdd_HHmmss");
+
+        return $"img_{date}{suffix}.{normalizedExtension}";
     }
 }

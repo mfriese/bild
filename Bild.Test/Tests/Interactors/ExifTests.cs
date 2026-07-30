@@ -1,6 +1,7 @@
 ﻿using Bild.Core.Features.Files;
 using Bild.Core.Interactors.EXIF;
 using Bild.Core.Interactors.ExifFlags;
+using Bild.Core.Interactors.Files;
 using Bild.Test.Interactors;
 using MetadataExtractor.Util;
 
@@ -8,6 +9,38 @@ namespace Bild.Test.Tests.Interactors;
 
 public class ExifTests
 {
+    [Theory]
+    [InlineData(0, "img_20240305_134512.jpg")]
+    [InlineData(1, "img_20240305_134512_01.jpg")]
+    [InlineData(12, "img_20240305_134512_12.jpg")]
+    public void FileName_Uses24HourTimestampAndDeterministicCollisionIndex(int collisionIndex, string expected)
+    {
+        GetExifFilenameInteractor getExifFilename = new();
+
+        var filename = getExifFilename.Perform(
+            new DateTime(2024, 3, 5, 13, 45, 12),
+            ".jpg",
+            collisionIndex);
+
+        Assert.Equal(expected, filename);
+    }
+
+    [Fact]
+    public void FileHash_IsEqualForEqualContentAndDifferentOtherwise()
+    {
+        GetFileHashInteractor getFileHash = new();
+        using var first = new MemoryStream([1, 2, 3]);
+        using var same = new MemoryStream([1, 2, 3]);
+        using var different = new MemoryStream([3, 2, 1]);
+
+        var firstHash = getFileHash.Perform(first);
+        var sameHash = getFileHash.Perform(same);
+        var differentHash = getFileHash.Perform(different);
+
+        Assert.Equal(firstHash, sameHash);
+        Assert.NotEqual(firstHash, differentHash);
+    }
+
     [Fact]
     public void Test_Pic_01_jpg_Date_Scanner()
     {

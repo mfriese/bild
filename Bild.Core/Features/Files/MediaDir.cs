@@ -32,40 +32,48 @@ public class MediaDir(string path)
     public Result<string> Insert(MediaFile sourceFile)
     {
         GetExifFilenameInteractor getExifFilename = new();
-        var targetFilenameWithSuffix = getExifFilename.Perform(sourceFile, true);
-        var targetFilenameNoSuffix = getExifFilename.Perform(sourceFile, false);
+        var targetFilename = getExifFilename.Perform(sourceFile);
 
-        if (targetFilenameNoSuffix is null)
+        if (targetFilename is null)
         {
             return Result.Failure<string>($"[red]Cannot determine target filename![/]");
         }
 
-        var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilenameNoSuffix));
+        var targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilename));
+        var collisionIndex = 0;
+        GetFileHashInteractor getFileHash = new();
+        string sourceHash = null;
 
-        if (targetFile.Exists)
+        while (targetFile.Exists)
         {
+            sourceHash ??= getFileHash.Perform(sourceFile);
+            var targetHash = getFileHash.Perform(targetFile);
+
+            if (sourceHash is not null && sourceHash == targetHash)
+            {
+                return Result.Success($"[green]Identical file already exists, skipping.[/]");
+            }
+
             if (sourceFile.IsImage)
             {
                 CompareImagesInteractor compareImages = new();
                 double similarity = compareImages.Perform(sourceFile, targetFile);
 
-                if (99.9 > similarity)
+                if (similarity >= 99.9)
                 {
-                    // seems like a different file. Add a random suffix to avoid collision.
-                    targetFile = new MediaFile(Path.Combine(AbsolutePath, targetFilenameWithSuffix));
-                }
-                else
-                {
-                    // Similarity is 100% so it is the same file
                     return Result.Success($"[green]Similar file (factor '{similarity}') already exists, skipping.[/]");
                 }
             }
-            else
+
+            collisionIndex++;
+            var collisionFilename = getExifFilename.Perform(sourceFile, collisionIndex);
+
+            if (collisionFilename is null)
             {
-                // Video cannot be compared this way, but it's already there. With videos we assume
-                // automatically it's the same. No need to copy.
-                return Result.Success($"[yellow]Video target file '{targetFile}' already exists.[/]");
+                return Result.Failure<string>($"[red]Cannot determine target filename![/]");
             }
+
+            targetFile = new MediaFile(Path.Combine(AbsolutePath, collisionFilename));
         }
 
         targetFile.Copy(sourceFile);
