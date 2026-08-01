@@ -87,14 +87,7 @@ internal class NewImportCommand : Command<Cli>
 
                 var resultTree = new Tree(acceptedFile.ToString());
 
-                if (result.IsSuccess)
-                {
-                    resultTree.AddNode($"{result.Value}");
-                }
-                else
-                {
-                    resultTree.AddNode($"{result.Error}");
-                }
+                resultTree.AddNode(result.IsSuccess ? $"{result.Value}" : $"{result.Error}");
 
                 resultTree.AddNode($"File {++counter} of {acceptedFiles.Count}.");
 
@@ -117,17 +110,15 @@ internal class NewImportCommand : Command<Cli>
                             .DefaultValue(delete));
                 }
 
-                if (delete is 0 or 1)
+                switch (delete)
                 {
-                    continue;
-                }
-
-                if (delete is 2 or 3)
-                {
-                    acceptedFile.Delete();
-
-                    AnsiConsole.MarkupLine($"Deleted [yellow]{acceptedFile}[/].");
-                    AnsiConsole.MarkupLine($"");
+                    case 0 or 1:
+                        continue;
+                    case 2 or 3:
+                        acceptedFile.Delete();
+                        AnsiConsole.MarkupLine($"Deleted [yellow]{acceptedFile}[/].");
+                        AnsiConsole.MarkupLine($"");
+                        break;
                 }
             }
         }
