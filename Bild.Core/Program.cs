@@ -17,6 +17,7 @@ public class Program
         {
             config.AddCommand<NewImportCommand>(NewImportCommand.Name);
             config.AddCommand<ConfigureCommand>(ConfigureCommand.Name);
+            config.AddCommand<RemoveDuplicatesCommand>(RemoveDuplicatesCommand.Name);
         });
         
         return app;
@@ -30,6 +31,7 @@ public class Program
         {
             NewImportCommand.Name,
             ConfigureCommand.Name,
+            RemoveDuplicatesCommand.Name,
             Cancel
         };
 
